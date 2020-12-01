@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ezypayment.all" type="CompoundRunConfigurationType">
+    <toRun name="Skoruba.IdentityServer4.Admin: ezypayment.id.admin" type="LaunchSettings" />
+    <toRun name="Skoruba.IdentityServer4.STS.Identity: ezypayment.id.sts.identity" type="LaunchSettings" />
+    <method v="2" />
+  </configuration>
+</component>
