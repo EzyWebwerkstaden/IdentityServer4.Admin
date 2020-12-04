@@ -17,7 +17,6 @@
         },
         "ezyc.id.sts.identity": {
             "commandName": "Project",
-            "launchBrowser": true,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "CUSTOM_SETTINGS_PATH" : "/projekt/BookSecure/docker/IdentityServer/STS.Identity"
@@ -33,7 +32,6 @@
         },
         "ezypayment.id.sts.identity": {
             "commandName": "Project",
-            "launchBrowser": true,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "CUSTOM_SETTINGS_PATH" : "/projekt/ezyPayment/docker/IdentityServer/STS.Identity"
