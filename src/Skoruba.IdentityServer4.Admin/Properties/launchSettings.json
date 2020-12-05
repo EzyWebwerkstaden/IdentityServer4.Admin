@@ -12,14 +12,14 @@
             "commandName": "IISExpress",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "/projekt/BookSecure/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "BookSecure/docker/IdentityServer/Admin"
             }
         },
         "ezyc.id.admin": {
             "commandName": "Project",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "/projekt/BookSecure/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "BookSecure/docker/IdentityServer/Admin"
             },
             "applicationUrl": "http://localhost:9606"
         },
@@ -27,14 +27,14 @@
             "commandName": "IISExpress",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "/projekt/ezyPayment/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/Admin"
             }
         },
         "ezypayment.id.admin": {
             "commandName": "Project",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "/projekt/ezyPayment/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/Admin"
             },
             "applicationUrl": "http://localhost:8612"
         }
