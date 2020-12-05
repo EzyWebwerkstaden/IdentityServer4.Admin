@@ -23,10 +23,18 @@ namespace Skoruba.IdentityServer4.Admin
     public class Program
     {
         private static IConfiguration _bootstrapperConfig;
+        private static string? _subEnvironment;
+        private static string _currentDir;
+        private static PhysicalFileProvider _fp;
+        private static string? _environment;
         private const string SeedArgs = "/seed";
 
         public static async Task Main(string[] args)
         {
+            _currentDir = Directory.GetCurrentDirectory();
+            _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            _subEnvironment = Environment.GetEnvironmentVariable("SUB_ENVIRONMENT");
+            _fp = GetConsumerProjectSettingsFileProvider(_currentDir);
             _bootstrapperConfig = GetBootstrapperConfig(args);
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(_bootstrapperConfig)
@@ -71,23 +79,18 @@ namespace Skoruba.IdentityServer4.Admin
 
         private static IConfiguration GetBootstrapperConfig(string[] args)
         {
-            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            //  EZY-modification (EZYC-3029): allow sub-environment config
-            var subEnvironment = Environment.GetEnvironmentVariable("SUB_ENVIRONMENT");
-            var customSettingsPath = Environment.GetEnvironmentVariable("CUSTOM_SETTINGS_PATH") ?? "CustomSettings";
-            var fp = customSettingsPath == "CustomSettings" ? null : new PhysicalFileProvider(customSettingsPath);
             var configurationBuilder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(_currentDir)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile(fp, $"{"CustomSettings"}/appsettings._Shared.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(fp, $"{"CustomSettings"}/appsettings.{environment}.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(fp, $"{"CustomSettings"}/appsettings.{environment}.{subEnvironment}.json", optional: true, reloadOnChange: true)
+                .AddJsonFile(_fp, $"{"CustomSettings"}/appsettings._Shared.json", optional: true, reloadOnChange: true)
+                .AddJsonFile(_fp, $"{"CustomSettings"}/appsettings.{_environment}.json", optional: true, reloadOnChange: true)
+                .AddJsonFile(_fp, $"{"CustomSettings"}/appsettings.{_environment}.{_subEnvironment}.json", optional: true, reloadOnChange: true)
                 .AddJsonFile("serilog.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(fp, $"{"CustomSettings"}/serilog._Shared.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(fp, $"{"CustomSettings"}/serilog.{environment}.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(fp, $"{"CustomSettings"}/serilog.{environment}.{subEnvironment}.json", optional: true, reloadOnChange: true);
+                .AddJsonFile(_fp, $"{"CustomSettings"}/serilog._Shared.json", optional: true, reloadOnChange: true)
+                .AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.json", optional: true, reloadOnChange: true)
+                .AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.{_subEnvironment}.json", optional: true, reloadOnChange: true);
 
-            var isDevelopment = environment == Environments.Development;
+            var isDevelopment = _environment == Environments.Development;
             if (isDevelopment)
             {
                 configurationBuilder.AddUserSecrets<Startup>();
@@ -110,30 +113,26 @@ namespace Skoruba.IdentityServer4.Admin
                  {
                      //  EZY-modification (EZYC-3029): allow more robust configuration
                      var bootstrapperAdminConfig = _bootstrapperConfig.GetSection(nameof(AdminConfiguration)).Get<AdminConfiguration>();
-                     var env = hostContext.HostingEnvironment;
-                     var subEnvironment = Environment.GetEnvironmentVariable("SUB_ENVIRONMENT");
-                     var customSettingsPath = Environment.GetEnvironmentVariable("CUSTOM_SETTINGS_PATH") ?? "CustomSettings";
-                     var fp = customSettingsPath == "CustomSettings" ? null : new PhysicalFileProvider(customSettingsPath);
-                     configApp.AddJsonFile(fp, $"{"CustomSettings"}/appsettings._Shared.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(fp, $"{"CustomSettings"}/appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(fp, $"{"CustomSettings"}/appsettings.{env.EnvironmentName}.{subEnvironment}.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/appsettings._Shared.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/appsettings.{_environment}.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/appsettings.{_environment}.{_subEnvironment}.json", optional: true, reloadOnChange: true);
 
                      configApp.AddJsonFile("serilog.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(fp, $"{"CustomSettings"}/serilog._Shared.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(fp, $"{"CustomSettings"}/serilog.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(fp, $"{"CustomSettings"}/serilog.{env.EnvironmentName}.{subEnvironment}.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/serilog._Shared.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.{_subEnvironment}.json", optional: true, reloadOnChange: true);
 
                      configApp.AddJsonFile("identitydata.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(fp, $"{"CustomSettings"}/identitydata.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/identitydata.{_environment}.json", optional: true, reloadOnChange: true);
 
                      configApp.AddJsonFile("identityserverdata.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(fp, $"{"CustomSettings"}/identityserverdata.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/identityserverdata.{_environment}.json", optional: true, reloadOnChange: true);
 
                      if (!hostContext.HostingEnvironment.IsDevelopment())
                      {
                          configApp.AddSecretsManager(configurator: options =>
                          {
-                             var prefix = $"{bootstrapperAdminConfig.ApplicationName}/{env.EnvironmentName}/";
+                             var prefix = $"{bootstrapperAdminConfig.ApplicationName}/{_environment}/";
                              options.SecretFilter = entry => entry.Name.StartsWith(prefix);
                              options.KeyGenerator = (entry, key) =>
                              {
@@ -145,7 +144,7 @@ namespace Skoruba.IdentityServer4.Admin
                          });
                      }
 
-                     if (env.IsDevelopment())
+                     if (hostContext.HostingEnvironment.IsDevelopment())
                      {
                          configApp.AddUserSecrets<Startup>();
                      }
@@ -180,5 +179,17 @@ namespace Skoruba.IdentityServer4.Admin
                         lc.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}");
                     });
                 });
+
+        private static PhysicalFileProvider GetConsumerProjectSettingsFileProvider(string currentDir)
+        {
+            var customSettingsPath = Environment.GetEnvironmentVariable("CUSTOM_SETTINGS_PATH");
+            if (customSettingsPath == null)
+                return null; // no Custom settings path provided, so no file provider.
+
+            // PhysicalFileProvider requires absolute path. Path.Combine doesn't do it, we need to put it into GetFUllPath.
+            var combinedPath = Path.Combine(currentDir, "../../../", customSettingsPath);
+            var absolutePath = Path.GetFullPath(combinedPath);
+            return new PhysicalFileProvider(absolutePath);
+        }
     }
 }
