@@ -25,5 +25,6 @@
         public bool IdentityServerUseExternalBaseUrl { get; set; }
         public string IdentityServerExternalBaseUrl { get; set; }
         public string ApplicationName { get; set; } = "Id.Admin";
+        public bool ShowPii { get; set; }
     }
 }

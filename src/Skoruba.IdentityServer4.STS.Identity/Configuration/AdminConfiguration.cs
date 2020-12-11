@@ -14,5 +14,6 @@
 
         // EZY-modification (EZYC-3029): below our custom settings
         public string ApplicationName { get; set; } = "Id.STS.Identity";
+        public bool ShowPii { get; set; }
     }
 }

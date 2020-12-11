@@ -40,8 +40,8 @@ namespace Skoruba.IdentityServer4.Admin
         public void ConfigureServices(IServiceCollection services)
         {
             // EZYC-2851-modification: Allow to show more details about errors
-            if (HostingEnvironment.IsDevelopment())
-                IdentityModelEventSource.ShowPII = true;
+            var adminConfiguration = Configuration.GetSection(nameof(AdminConfiguration)).Get<AdminConfiguration>();
+            IdentityModelEventSource.ShowPII = adminConfiguration.ShowPii;
             
             var rootConfiguration = CreateRootConfiguration();
             services.AddSingleton(rootConfiguration);
