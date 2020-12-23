@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="vbgeneric.all" type="CompoundRunConfigurationType">
+    <toRun name="Skoruba.IdentityServer4.Admin: vbgeneric.id.admin" type="LaunchSettings" />
+    <toRun name="Skoruba.IdentityServer4.STS.Identity: vbgeneric.id.sts.identity" type="LaunchSettings" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -37,6 +37,36 @@
                 "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/Admin"
             },
             "applicationUrl": "http://localhost:8612"
+        },
+        "vbgeneric.id.admin (IIS Express)": {
+            "commandName": "IISExpress",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "CUSTOM_SETTINGS_PATH" : "VivaAerobus.Generic.Api/docker/IdentityServer/Admin"
+            }
+        },
+        "vbgeneric.id.admin": {
+            "commandName": "Project",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "CUSTOM_SETTINGS_PATH" : "VivaAerobus.Generic.Api/docker/IdentityServer/Admin"
+            },
+            "applicationUrl": "http://localhost:9506"
+        },
+        "vivaair.id.admin (IIS Express)": {
+            "commandName": "IISExpress",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "CUSTOM_SETTINGS_PATH" : "VivaAir.Generic.Api/docker/IdentityServer/Admin"
+            }
+        },
+        "vivaair.id.admin": {
+            "commandName": "Project",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "CUSTOM_SETTINGS_PATH" : "VivaAir/docker/IdentityServer/Admin"
+            },
+            "applicationUrl": "http://localhost:9806"
         }
     }
 }
