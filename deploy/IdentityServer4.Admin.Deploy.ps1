@@ -258,7 +258,7 @@ else {
     -AwsvpcConfiguration_Subnet $VpcSubnet `
     -TaskDefinition $TaskDefinitionArn `
     -Region $Region `
-    -HealthCheckGracePeriodSecond 45 `
+    -HealthCheckGracePeriodSecond 15 `
     -Force
 
   if(!$?) {
