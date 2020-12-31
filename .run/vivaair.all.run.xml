@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="vivaair.all" type="CompoundRunConfigurationType">
-    <toRun name="Skoruba.IdentityServer4.Admin: vbgeneric.id.admin" type="LaunchSettings" />
-    <toRun name="Skoruba.IdentityServer4.STS.Identity: vbgeneric.id.sts.identity" type="LaunchSettings" />
+    <toRun name="Skoruba.IdentityServer4.STS.Identity: vivaair.id.sts.identity" type="LaunchSettings" />
+    <toRun name="Skoruba.IdentityServer4.Admin: vivaair.id.admin" type="LaunchSettings" />
     <method v="2" />
   </configuration>
 </component>
