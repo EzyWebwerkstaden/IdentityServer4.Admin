@@ -1,40 +1,35 @@
-require "./rake-build/DockerRegistry.rb"
-require "./rake-build/Docker.rb"
-require "./rake-build/Build.rb"
 
-is_windows = Gem.win_platform?
-puts "Running on windows: #{is_windows}"
-build_number = ENV['BUILD_NUMBER'] || "0.1.0"
-tenant = ENV["TENANT"] || "Demo"
-build = Build.new()
-docker = Docker.new()
-registry_gcr = DockerRegistry.new("ghcr.io", is_windows)
+require 'rexml/document'
+include REXML
+root = File.dirname(__FILE__)
 
-task :version do
-  if build_number
-    puts "Will use the: #{build_number} build number provided by TeamCity"
-  else
-    puts "Will use the hardcoded build number: #{build_number}"
-  end
+packages_xml = Document.new(File.open('packages.config'))
+ezyBuild_version = XPath.first(packages_xml, "/packages/package[@id='EzyWebwerkstaden.ezyBuild-Rake']").attributes.get_attribute("version").value
+puts "fetching ezyBuild-Rake version: #{ezyBuild_version}" 
+# Fetch with Mono image which contains nuget. Nuget is easier to work with non-dotnet packages than dotnet restore. 
+sh "docker run --rm -v #{root}:/app mono:6.12.0.107 /bin/sh -c \"cd /app && nuget restore ./packages.config -Config ./nuget.config -PackagesDirectory ./packages\""
+
+ezyBuildDir = "./packages/EzyWebwerkstaden.ezyBuild-Rake.#{ezyBuild_version}/build"
+Dir["#{ezyBuildDir}/*.rb"].each {|file| require file } # the order of referencing matters and is different under windows vs linux (TC)
+Dir["#{ezyBuildDir}/Tools/*.rb"].each {|file| require file }
+Dir["#{ezyBuildDir}/Projects/*.rb"].each {|file| require file }
+Dir["./rake-build/*.rb"].each {|file| require file }
+
+project_group = IdentityServerProjectGroup.new(root)
+project = project_group.get_current_project()
+
+task :build => [:clean_old_images] do
+  project.build()
 end
 
-task :build => [:version] do
-  build.project("./src/Skoruba.IdentityServer4.STS.Identity/Dockerfile", "ezy.identityserver.sts.identity", build_number)
-  build.project("./src/Skoruba.IdentityServer4.Admin/Dockerfile", "ezy.identityserver.admin", build_number)
+task :test do
+  project.test()
 end
 
-task :docker_registry_login do
-  registry_gcr.login()
+task :push do
+  project.push()
 end
 
-task :docker_registry_logout do
-  registry_gcr.logout()
+task :clean_old_images do
+  project_group.clean_old_images()
 end
-
-task :images_push_to_GCR => [:version, :docker_registry_login] do
-  docker.tag_and_push("ezy.identityserver.sts.identity", build_number, registry_gcr, "ezywebwerkstaden/")
-  docker.tag_and_push("ezy.identityserver.admin", build_number, registry_gcr, "ezywebwerkstaden/")
-end
-
-task :bundle__push_to_GCR => [ :docker_registry_login, :images_push_to_GCR, :docker_registry_logout]
-task :default => :build
