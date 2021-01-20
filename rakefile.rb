@@ -6,8 +6,11 @@ root = File.dirname(__FILE__)
 packages_xml = Document.new(File.open('packages.config'))
 ezyBuild_version = XPath.first(packages_xml, "/packages/package[@id='EzyWebwerkstaden.ezyBuild-Rake']").attributes.get_attribute("version").value
 puts "fetching ezyBuild-Rake version: #{ezyBuild_version}" 
-# Fetch with Mono image which contains nuget. Nuget is easier to work with non-dotnet packages than dotnet restore. 
-sh "docker run --rm -v #{root}:/app mono:6.12.0.107 /bin/sh -c \"cd /app && nuget restore ./packages.config -Config ./nuget.config -PackagesDirectory ./packages\""
+# Fetch with Mono image which contains nuget. Nuget is easier to work with non-dotnet packages than dotnet restore.
+sh "docker run --rm -v #{root}:/app mono:6.12.0.107 /bin/sh -c \" \
+    cd /app && \
+    nuget sources add -name 'github' -source 'https://nuget.pkg.github.com/ezywebwerkstaden/index.json' -username 'ezydeploy' -password #{ENV["GCR_PAT"]} && \
+    nuget restore ./packages.config -PackagesDirectory ./packages\""
 
 ezyBuildDir = "./packages/EzyWebwerkstaden.ezyBuild-Rake.#{ezyBuild_version}/build"
 Dir["#{ezyBuildDir}/*.rb"].each {|file| require file } # the order of referencing matters and is different under windows vs linux (TC)
