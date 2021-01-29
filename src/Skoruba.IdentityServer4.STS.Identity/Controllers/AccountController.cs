@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Skoruba.IdentityServer4.Shared.Configuration.Identity;
 using Skoruba.IdentityServer4.STS.Identity.Configuration;
 using Skoruba.IdentityServer4.STS.Identity.Helpers;
@@ -35,7 +36,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
     [SecurityHeaders]
     [Authorize]
     public class AccountController<TUser, TKey> : Controller
-        where TUser : IdentityUser<TKey>, new()
+        where TUser : UserIdentity, new()
         where TKey : IEquatable<TKey>
     {
         private readonly UserResolver<TUser> _userResolver;
@@ -158,6 +159,11 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
 
                             // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
                             return Redirect(model.ReturnUrl);
+                        }
+
+                        if (DateTime.Now > user.PasswordsHistory.FirstOrDefault()?.ChangePasswordDate?.AddDays(90))
+                        {
+                            return RedirectToAction("ChangePassword", "Manage");
                         }
 
                         // request for a local page
