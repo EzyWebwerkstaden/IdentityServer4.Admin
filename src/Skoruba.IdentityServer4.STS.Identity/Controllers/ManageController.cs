@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
 using Skoruba.IdentityServer4.STS.Identity.Helpers;
 using Skoruba.IdentityServer4.STS.Identity.Helpers.Localization;
 using Skoruba.IdentityServer4.STS.Identity.ViewModels.Manage;
@@ -19,7 +21,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
 {    
     [Authorize]
     public class ManageController<TUser, TKey> : Controller
-        where TUser : IdentityUser<TKey>, new()
+        where TUser : UserIdentity, new()
         where TKey : IEquatable<TKey>
     {
         private readonly UserManager<TUser> _userManager;
@@ -164,12 +166,42 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
+            var passwordHasBeenAlreadyUsed = user.PasswordsHistory.Select(p => p.PasswordHash).Distinct().Any(hash =>
+            {
+                var res = _userManager.PasswordHasher.VerifyHashedPassword(user, hash, model.NewPassword);
+                return res == PasswordVerificationResult.Success;
+            });
+
+            if (passwordHasBeenAlreadyUsed)
+            {
+                AddError("Password has been already used");
+                return View(model);
+            }
+
+            var tempHashPassword = user.PasswordHash;
+
             var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
             if (!changePasswordResult.Succeeded)
             {
                 AddErrors(changePasswordResult);
                 return View(model);
             }
+
+            var previousPassword = new Password
+            {
+                PasswordHash = tempHashPassword,
+                ChangePasswordDate = DateTime.Now
+            };
+
+            var updatedUser = await _userManager.GetUserAsync(User);
+
+            var userHistory = user.PasswordsHistory;
+            userHistory.Insert(0, previousPassword);
+            userHistory = userHistory.Take(4).ToList();
+
+            updatedUser.PasswordsHistory = userHistory;
+
+            await _userManager.UpdateAsync(updatedUser);
 
             await _signInManager.RefreshSignInAsync(user);
             _logger.LogInformation(_localizer["PasswordChangedLog", user.UserName]);
