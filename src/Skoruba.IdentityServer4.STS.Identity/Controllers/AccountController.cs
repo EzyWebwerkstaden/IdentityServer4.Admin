@@ -161,7 +161,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                             return Redirect(model.ReturnUrl);
                         }
 
-                        if (DateTime.Now > user.PasswordsHistory.FirstOrDefault()?.ChangePasswordDate?.AddDays(90))
+                        if (!user.PasswordsHistory.Any() || DateTime.Now > user.PasswordsHistory.FirstOrDefault()?.ChangePasswordDate?.AddDays(90))
                         {
                             return RedirectToAction("ChangePassword", "Manage");
                         }
