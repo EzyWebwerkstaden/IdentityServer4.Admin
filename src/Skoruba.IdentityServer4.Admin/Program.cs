@@ -123,9 +123,11 @@ namespace Skoruba.IdentityServer4.Admin
                      configApp.AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.{_subEnvironment}.json", optional: true, reloadOnChange: true);
 
                      configApp.AddJsonFile("identitydata.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/identitydata.json", optional: true, reloadOnChange: true);
                      configApp.AddJsonFile(_fp, $"{"CustomSettings"}/identitydata.{_environment}.json", optional: true, reloadOnChange: true);
 
                      configApp.AddJsonFile("identityserverdata.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/identityserverdata.json", optional: true, reloadOnChange: true);
                      configApp.AddJsonFile(_fp, $"{"CustomSettings"}/identityserverdata.{_environment}.json", optional: true, reloadOnChange: true);
 
                      if (!hostContext.HostingEnvironment.IsDevelopment())
