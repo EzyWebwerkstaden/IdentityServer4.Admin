@@ -90,7 +90,8 @@ namespace Skoruba.IdentityServer4.STS.Identity
                      configApp.AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.json", optional: true, reloadOnChange: true);
                      configApp.AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.{_subEnvironment}.json", optional: true, reloadOnChange: true);
 
-                     if (!hostContext.HostingEnvironment.IsDevelopment())
+                     bool.TryParse(Environment.GetEnvironmentVariable("SKIP_AWS_SECRETS_MANAGER"), out var skipAwsSecretsManager);
+                     if (!hostContext.HostingEnvironment.IsDevelopment() && !skipAwsSecretsManager)
                      {
                          configApp.AddSecretsManager(configurator: options =>
                          {

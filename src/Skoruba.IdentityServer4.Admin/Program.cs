@@ -130,7 +130,8 @@ namespace Skoruba.IdentityServer4.Admin
                      configApp.AddJsonFile(_fp, $"{"CustomSettings"}/identityserverdata.json", optional: true, reloadOnChange: true);
                      configApp.AddJsonFile(_fp, $"{"CustomSettings"}/identityserverdata.{_environment}.json", optional: true, reloadOnChange: true);
 
-                     if (!hostContext.HostingEnvironment.IsDevelopment())
+                     bool.TryParse(Environment.GetEnvironmentVariable("SKIP_AWS_SECRETS_MANAGER"), out var skipAwsSecretsManager);
+                     if (!hostContext.HostingEnvironment.IsDevelopment() && !skipAwsSecretsManager)
                      {
                          configApp.AddSecretsManager(configurator: options =>
                          {
