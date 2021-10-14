@@ -409,7 +409,7 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
                     .AddOpenIdConnect(AuthenticationConsts.OidcAuthenticationScheme, options =>
                     {
                         options.Authority = adminConfiguration.IdentityServerBaseUrl;
-                        if (adminConfiguration.IdentityServerBaseUrlAllowInvalidSsl)
+                        if (adminConfiguration.IdentityServerAllowInvalidSsl)
                         {
                             options.BackchannelHttpHandler =new HttpClientHandler
                             {
