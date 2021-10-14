@@ -37,6 +37,7 @@ using Skoruba.IdentityServer4.Admin.EntityFramework.Repositories;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Repositories.Interfaces;
 using Skoruba.IdentityServer4.Admin.Helpers.Localization;
 using System.Linq;
+using System.Net.Http;
 using Skoruba.IdentityServer4.Admin.EntityFramework.MySql.Extensions;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Configuration;
 using Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer.Extensions;
@@ -408,6 +409,13 @@ namespace Skoruba.IdentityServer4.Admin.Helpers
                     .AddOpenIdConnect(AuthenticationConsts.OidcAuthenticationScheme, options =>
                     {
                         options.Authority = adminConfiguration.IdentityServerBaseUrl;
+                        if (adminConfiguration.IdentityServerAllowInvalidSsl)
+                        {
+                            options.BackchannelHttpHandler =new HttpClientHandler
+                            {
+                                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                            };
+                        }
                         options.RequireHttpsMetadata = adminConfiguration.RequireHttpsMetadata;
                         options.ClientId = adminConfiguration.ClientId;
                         options.ClientSecret = adminConfiguration.ClientSecret;
