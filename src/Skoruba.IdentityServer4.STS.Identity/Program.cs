@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using EzyNet.Gcp.SecretManager.SerilogSupport;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
@@ -106,6 +107,8 @@ namespace Skoruba.IdentityServer4.STS.Identity
                              };
                          });
                      }
+                     
+                     configApp.AddGoogleSecretManagerIfEnabled("appsettings");
 
                      if (hostContext.HostingEnvironment.IsDevelopment())
                      {

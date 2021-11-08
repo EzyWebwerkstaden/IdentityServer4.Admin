@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using EzyNet.Gcp.SecretManager.SerilogSupport;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
@@ -146,6 +147,8 @@ namespace Skoruba.IdentityServer4.Admin
                              };
                          });
                      }
+                     
+                     configApp.AddGoogleSecretManagerIfEnabled("appsettings");
 
                      if (hostContext.HostingEnvironment.IsDevelopment())
                      {
