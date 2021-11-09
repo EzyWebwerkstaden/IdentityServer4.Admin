@@ -18,7 +18,7 @@
         <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="3.1.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="3.1.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="3.1.1" />
-        <PackageReference Include="EzyWebwerkstaden.EzyNet.Gcp.SecretManager.SerilogSupport" Version="0.2.0" />
+        <PackageReference Include="EzyWebwerkstaden.EzyNet.Gcp.SecretManager.SerilogSupport" Version="1.0.0" /> <!-- EZY-modification (EZYC-4328): GCP Secret Manager support  -->
         <PackageReference Include="Kralizek.Extensions.Configuration.AWSSecretsManager" Version="1.4.1" />  <!-- EZY-modification (EZYC-3029): support aws Secrets Manager -->
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.1.6" />
         <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="3.1.6" />

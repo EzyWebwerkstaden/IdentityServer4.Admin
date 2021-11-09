@@ -148,6 +148,7 @@ namespace Skoruba.IdentityServer4.Admin
                          });
                      }
                      
+                     // EZY-modification (EZYC-4328): GCP Secret Manager support
                      configApp.AddGoogleSecretManagerIfEnabled("appsettings");
 
                      if (hostContext.HostingEnvironment.IsDevelopment())
