@@ -102,8 +102,8 @@ namespace Skoruba.IdentityServer4.Admin
             // var configuration = configurationBuilder.Build();
             //
             // configuration.AddAzureKeyVaultConfiguration(configurationBuilder);
-            configurationBuilder.AddCommandLine(args);
             configurationBuilder.AddEnvironmentVariables();
+            configurationBuilder.AddCommandLine(args);
 
             return configurationBuilder.Build();
         }

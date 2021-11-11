@@ -69,9 +69,8 @@ namespace Skoruba.IdentityServer4.STS.Identity
             // var configuration = configurationBuilder.Build();
             //
             // configuration.AddAzureKeyVaultConfiguration(configurationBuilder);
-
-            configurationBuilder.AddCommandLine(args);
             configurationBuilder.AddEnvironmentVariables();
+            configurationBuilder.AddCommandLine(args);
 
             return configurationBuilder.Build();
         }
