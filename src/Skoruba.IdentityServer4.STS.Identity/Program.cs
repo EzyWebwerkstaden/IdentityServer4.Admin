@@ -64,6 +64,11 @@ namespace Skoruba.IdentityServer4.STS.Identity
             {
                 configurationBuilder.AddUserSecrets<Startup>();
             }
+            
+            // TODO: To be able to generate & migrate databases in AWS, migrate AWS SM also here.
+            
+            // EZY-modification (EZYC-4328): GCP Secret Manager support
+            configurationBuilder.AddGoogleSecretManagerIfEnabled("appsettings");
 
             // EZY-modification (EZYC-3029) - disabled Azure key Vault for consistency with the Admin project. Here it however looks to be correctly applied
             // var configuration = configurationBuilder.Build();

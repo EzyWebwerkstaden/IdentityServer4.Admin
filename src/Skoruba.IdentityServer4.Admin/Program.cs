@@ -96,6 +96,11 @@ namespace Skoruba.IdentityServer4.Admin
             {
                 configurationBuilder.AddUserSecrets<Startup>();
             }
+            
+            // TODO: To be able to generate & migrate databases in AWS, migrate AWS SM also here.
+            
+            // EZY-modification (EZYC-4328): GCP Secret Manager support
+            configurationBuilder.AddGoogleSecretManagerIfEnabled("appsettings");
 
             // EZY-modification (EZYC-3029): disable this, as new code tries to build configuration before adding command line and env vars
             // I'm not sure whether it is a bug, so better comment this out.
