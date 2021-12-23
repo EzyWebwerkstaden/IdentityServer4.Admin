@@ -14,7 +14,7 @@ ezyBuild_version = XPath.first(packages_xml, "/packages/package[@id='EzyWebwerks
 ezyBuildDir = "./packages/EzyWebwerkstaden.ezyBuild-Rake.#{ezyBuild_version}/build"
 if (!File.exists?(ezyBuildDir))
   puts "fetching ezyBuild-Rake version: #{ezyBuild_version}"
-  sh "docker run --rm --env-file ./.env -v #{root}:/app ghcr.io/ezywebwerkstaden/ezy.devopstools /bin/sh -c \" \
+  sh "docker run --rm --env-file ./.env -v #{root}:/app ghcr.io/ezywebwerkstaden/ezy.devopstools:1.0.4 /bin/sh -c \" \
       cd /app && \
       nuget restore ./packages.config -PackagesDirectory ./packages\""
 elsif
