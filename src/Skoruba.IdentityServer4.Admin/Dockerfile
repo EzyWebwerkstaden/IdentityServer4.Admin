@@ -17,16 +17,15 @@ COPY ["src/Skoruba.IdentityServer4.Admin.BusinessLogic.Identity/Skoruba.Identity
 COPY ["src/Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer/Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer.csproj", "src/Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer/"]
 COPY ["src/Skoruba.IdentityServer4.Shared/Skoruba.IdentityServer4.Shared.csproj", "src/Skoruba.IdentityServer4.Shared/"]
 
-# Required to be able to pull dependencies from GCR
-ARG GCR_PAT
-
-RUN dotnet restore "src/Skoruba.IdentityServer4.Admin/Skoruba.IdentityServer4.Admin.csproj"
+RUN --mount=type=secret,id=gcr-pat export GCR_PAT=$(cat /run/secrets/gcr-pat) && \
+    dotnet restore "src/Skoruba.IdentityServer4.Admin/Skoruba.IdentityServer4.Admin.csproj"
 COPY . .
 WORKDIR "/src/src/Skoruba.IdentityServer4.Admin"
 RUN dotnet build "Skoruba.IdentityServer4.Admin.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Skoruba.IdentityServer4.Admin.csproj" -c Release -o /app/publish
+RUN --mount=type=secret,id=gcr-pat export GCR_PAT=$(cat /run/secrets/gcr-pat) && \
+    dotnet publish "Skoruba.IdentityServer4.Admin.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
