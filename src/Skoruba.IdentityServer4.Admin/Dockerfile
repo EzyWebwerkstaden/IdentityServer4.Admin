@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
+FROM ghcr.io/ezywebwerkstaden/ezy.ubi8.dotnet-31-runtime:3.1-0.0.2 AS base
 WORKDIR /app
 EXPOSE 80
 
