@@ -1,9 +1,10 @@
-FROM ghcr.io/ezywebwerkstaden/ezy.ubi8.dotnet-31-runtime:3.1-0.0.2 AS base
-WORKDIR /app
-EXPOSE 80
-
-FROM ghcr.io/ezywebwerkstaden/ezy.dotnetcoresdk:1.0.4--3.1-buster AS build
+# ---------------------
+# Builder
+FROM ghcr.io/ezywebwerkstaden/ezy.dotnetcoresdk:1.0.4--3.1.200-buster as builder
+LABEL se.ezy.project=identityserver-sts-identity \
+  se.ezy.image-purpose=build
 WORKDIR /src
+
 COPY ["src/Skoruba.IdentityServer4.STS.Identity/Skoruba.IdentityServer4.STS.Identity.csproj", "src/Skoruba.IdentityServer4.STS.Identity/"]
 COPY ["src/Skoruba.IdentityServer4.Admin.EntityFramework.MySql/Skoruba.IdentityServer4.Admin.EntityFramework.MySql.csproj", "src/Skoruba.IdentityServer4.Admin.EntityFramework.MySql/"]
 COPY ["src/Skoruba.IdentityServer4.Admin.EntityFramework.Identity/Skoruba.IdentityServer4.Admin.EntityFramework.Identity.csproj", "src/Skoruba.IdentityServer4.Admin.EntityFramework.Identity/"]
@@ -14,18 +15,43 @@ COPY ["src/Skoruba.IdentityServer4.Admin.EntityFramework.PostgreSQL/Skoruba.Iden
 COPY ["src/Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer/Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer.csproj", "src/Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer/"]
 COPY ["src/Skoruba.IdentityServer4.Shared/Skoruba.IdentityServer4.Shared.csproj", "src/Skoruba.IdentityServer4.Shared/"]
 
-
 RUN --mount=type=secret,id=gcr-pat export GCR_PAT=$(cat /run/secrets/gcr-pat) && \
     dotnet restore "src/Skoruba.IdentityServer4.STS.Identity/Skoruba.IdentityServer4.STS.Identity.csproj"
 COPY . .
 WORKDIR "/src/src/Skoruba.IdentityServer4.STS.Identity"
 RUN dotnet build "Skoruba.IdentityServer4.STS.Identity.csproj" -c Release -o /app/build
 
-FROM build AS publish
+
+
+# ---------------------
+# Publish
+FROM builder AS publish
+LABEL se.ezy.project=identityserver-sts-identity \
+  se.ezy.image-purpose=build
+
 RUN --mount=type=secret,id=gcr-pat export GCR_PAT=$(cat /run/secrets/gcr-pat) && \
     dotnet publish "Skoruba.IdentityServer4.STS.Identity.csproj" -c Release -o /app/publish
 
-FROM base AS final
+
+
+# ---------------------
+# Final runtime image for GCP
+FROM ghcr.io/ezywebwerkstaden/ezy.ubi8.dotnet-31-runtime:3.1-1.0.4 as gcp
+LABEL se.ezy.project=identityserver-sts-identity \
+  se.ezy.image-purpose=dist
+
+COPY --from=publish /app/publish .
+ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
+ENTRYPOINT ["dotnet", "Skoruba.IdentityServer4.STS.Identity.dll"]
+
+
+
+# ---------------------
+# Final runtime image for AWS
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1.2-buster-slim as aws
+LABEL se.ezy.project=identityserver-sts-identity \
+  se.ezy.image-purpose=dist
+
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
