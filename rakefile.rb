@@ -2,6 +2,9 @@ require 'rexml/document'
 include REXML
 root = File.dirname(__FILE__)
 
+# Set default project namespace in nexus
+ENV["NEXUS_ROOT_NAMESPACE"] = 'sabre/radixx/ezy/'
+
 # Section 1 - Create .env file with all env variables that we don't want to be shown in the console.
 puts "creating .env file."
 File.open(".env", "w") do |f|
