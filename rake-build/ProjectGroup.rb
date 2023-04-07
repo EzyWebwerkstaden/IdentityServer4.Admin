@@ -10,6 +10,7 @@ class ProjectGroup < ProjectGroupBase
       dockerfile_path: 'src/Skoruba.IdentityServer4.STS.Identity/Dockerfile',
       image_name: 'ezy.identityserver.sts.identity',
       attributes: {
+        'secrets_build_param' => "--secret id=gcr-pat,env=GCR_PAT \ ",
         'nexus' => {
           'docker_image_path' => 'sabre/radixx/ezy/ezy-identityserver-sts-identity'
         }
@@ -22,6 +23,7 @@ class ProjectGroup < ProjectGroupBase
       dockerfile_path: 'src/Skoruba.IdentityServer4.Admin/Dockerfile',
       image_name: 'ezy.identityserver.admin',
       attributes: {
+        'secrets_build_param' => "--secret id=gcr-pat,env=GCR_PAT \ ",
         'nexus' => {
           'docker_image_path' => 'sabre/radixx/ezy/ezy-identityserver-admin'
         }

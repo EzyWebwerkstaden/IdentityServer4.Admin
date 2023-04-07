@@ -1,6 +1,6 @@
 # ---------------------
 # Builder
-FROM ghcr.io/ezywebwerkstaden/ezy.dotnetcoresdk:1.0.4--3.1.200-buster as builder
+FROM ghcr.io/ezywebwerkstaden/ezy.dotnetcoresdk:1.0.5--3.1.200-buster as builder
 LABEL se.ezy.project=identityserver-admin \
   se.ezy.image-purpose=build
 WORKDIR /src
