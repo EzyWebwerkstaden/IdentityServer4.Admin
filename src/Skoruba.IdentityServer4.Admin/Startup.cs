@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Skoruba.AuditLogging.EntityFramework.Entities;
-using Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Dtos.Identity;
 using Skoruba.IdentityServer4.Admin.Configuration.Interfaces;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.DbContexts;
 using Skoruba.IdentityServer4.Admin.EntityFramework.Shared.Entities.Identity;
@@ -16,7 +15,7 @@ using Skoruba.IdentityServer4.Admin.Helpers;
 using Skoruba.IdentityServer4.Admin.Configuration;
 using Skoruba.IdentityServer4.Admin.Configuration.Constants;
 using System;
-using Microsoft.AspNetCore.DataProtection;
+using EzyNet.AspNetCore.Infrastructure.Middleware;
 using Microsoft.IdentityModel.Logging;
 using Skoruba.IdentityServer4.Shared.Dtos;
 using Skoruba.IdentityServer4.Shared.Dtos.Identity;
@@ -113,6 +112,7 @@ namespace Skoruba.IdentityServer4.Admin
 
             // Add custom security headers
             app.UseSecurityHeaders(Configuration);
+            app.UseSecurityHeadersMiddleware(); // From EzyNet
 
             app.UseStaticFiles();
 

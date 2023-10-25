@@ -12,7 +12,7 @@ using Skoruba.IdentityServer4.STS.Identity.Configuration.Constants;
 using Skoruba.IdentityServer4.STS.Identity.Configuration.Interfaces;
 using Skoruba.IdentityServer4.STS.Identity.Helpers;
 using System;
-using Microsoft.AspNetCore.DataProtection;
+using EzyNet.AspNetCore.Infrastructure.Middleware;
 using Microsoft.IdentityModel.Logging;
 using Skoruba.IdentityServer4.Shared.Helpers;
 
@@ -80,6 +80,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
 
             // Add custom security headers
             app.UseSecurityHeaders(Configuration);
+            app.UseSecurityHeadersMiddleware(); // From EzyNet
 
             app.UseStaticFiles();
             UseAuthentication(app);
