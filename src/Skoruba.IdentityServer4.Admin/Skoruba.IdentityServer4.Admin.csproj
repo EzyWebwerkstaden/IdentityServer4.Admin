@@ -47,11 +47,8 @@
         <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
         <PackageReference Include="Serilog.Sinks.Datadog.Logs" Version="0.5.2" />
         <PackageReference Include="Serilog.Sinks.GoogleCloudLogging" Version="3.5.0" />
+        <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="3.1.0" />
         <PackageReference Include="Serilog.Sinks.Redis.List" Version="2.0.0-beta-0036" />
-        <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
-        <PackageReference Include="Serilog.Sinks.MSSqlServer" Version="5.5.0" />
-        <PackageReference Include="Serilog.Sinks.Seq" Version="4.0.0" />
-        <PackageReference Include="StackExchange.Redis" Version="2.1.58" /> <!-- EZY-modification (EZYC-3029): To support Redis.List -->
     </ItemGroup>
 
     <ItemGroup>
