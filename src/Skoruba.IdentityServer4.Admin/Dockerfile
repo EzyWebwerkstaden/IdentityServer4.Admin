@@ -39,7 +39,7 @@ RUN --mount=type=secret,id=gcr-pat export GCR_PAT=$(cat /run/secrets/gcr-pat) &&
 
 # ---------------------
 # Final runtime image for GCP
-FROM ghcr.io/ezywebwerkstaden/ezy.ubi8.dotnet-31-runtime:3.1-1.0.4 as gcp
+FROM ghcr.io/ezywebwerkstaden/ezy.ubi8.dotnet-31-runtime:3.1-1.0.8 as gcp
 LABEL se.ezy.project=identityserver-admin \
   se.ezy.image-purpose=dist
 
