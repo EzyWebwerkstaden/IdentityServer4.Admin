@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- TargetFramework doesn't matter, it's just needed for "dotnet restore" to work -->
+  <PropertyGroup>
+      <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+  <!-- We just need to pull the ezyBuild package for build process to work -->
+  <ItemGroup>
+    <PackageReference Include="ezyBuild" Version="2.0.7" />
+  </ItemGroup>
+</Project>
