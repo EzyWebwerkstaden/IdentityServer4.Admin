@@ -1,8 +1,12 @@
 # ---------------------
 # Builder
-FROM ghcr.io/ezywebwerkstaden/ezy.dotnetcoresdk:1.0.5--3.1.200-buster as builder
+FROM ghcr.io/ezywebwerkstaden/ezy.dotnetcoresdk:1.0.20--3.1.200-buster as builder
 LABEL se.ezy.project=identityserver-admin \
   se.ezy.image-purpose=build
+
+# ToDo: run as buildagent. Base image leaves buildagent as default user, so we have to switch back to root, otherwise build fails with permissions error.
+USER root
+
 WORKDIR /src
 
 COPY ["src/Skoruba.IdentityServer4.Admin/Skoruba.IdentityServer4.Admin.csproj", "src/Skoruba.IdentityServer4.Admin/"]
@@ -18,8 +22,10 @@ COPY ["src/Skoruba.IdentityServer4.Admin.BusinessLogic.Identity/Skoruba.Identity
 COPY ["src/Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer/Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer.csproj", "src/Skoruba.IdentityServer4.Admin.EntityFramework.SqlServer/"]
 COPY ["src/Skoruba.IdentityServer4.Shared/Skoruba.IdentityServer4.Shared.csproj", "src/Skoruba.IdentityServer4.Shared/"]
 
-RUN --mount=type=secret,id=gcr-pat export GCR_PAT=$(cat /run/secrets/gcr-pat) && \
-    dotnet restore "src/Skoruba.IdentityServer4.Admin/Skoruba.IdentityServer4.Admin.csproj"
+RUN --mount=type=secret,id=github_ezy,dst=/etc/secrets/github_ezy.env \
+      export $(xargs < /etc/secrets/github_ezy.env) && \
+      export GCR_PAT=$(echo $GCR_PAT|tr -d "\t\r\n") && \
+      dotnet restore "src/Skoruba.IdentityServer4.Admin/Skoruba.IdentityServer4.Admin.csproj"
 COPY . .
 WORKDIR "/src/src/Skoruba.IdentityServer4.Admin"
 RUN dotnet build "Skoruba.IdentityServer4.Admin.csproj" -c Release -o /app/build
@@ -32,8 +38,9 @@ FROM builder AS publish
 LABEL se.ezy.project=identityserver-admin \
   se.ezy.image-purpose=build
   
-RUN --mount=type=secret,id=gcr-pat export GCR_PAT=$(cat /run/secrets/gcr-pat) && \
-    dotnet publish "Skoruba.IdentityServer4.Admin.csproj" -c Release -o /app/publish
+RUN --mount=type=secret,id=github_ezy,dst=/etc/secrets/github_ezy.env \
+      export $(xargs < /etc/secrets/github_ezy.env) && \
+      dotnet publish "Skoruba.IdentityServer4.Admin.csproj" -c Release -o /app/publish
 
 
 

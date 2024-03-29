@@ -8,7 +8,7 @@ class ToolsGroup < ToolsGroupBase
       name: 'docker-push-from-github-to-nexus',
       tools_group: self,
       source_registry: DockerRegistry.github_ezy,
-      target_registry: DockerRegistry.sabre_nexus)
+      target_registry: DockerRegistry.sabre_nexus_staging)
 
     @tools = [docker_push_from_github_to_nexus]
   end
