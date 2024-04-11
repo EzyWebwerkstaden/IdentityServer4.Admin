@@ -5,6 +5,6 @@
   </PropertyGroup>
   <!-- We just need to pull the ezyBuild package for build process to work -->
   <ItemGroup>
-    <PackageReference Include="ezyBuild" Version="2.0.13" />
+    <PackageReference Include="ezyBuild" Version="2.0.18" />
   </ItemGroup>
 </Project>
