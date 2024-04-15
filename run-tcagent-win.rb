@@ -3,7 +3,7 @@
 # * RUN_INNER_CONTAINERS_AS_ROOT=false. When mounting our sources into /app from Windows, passing the $(id -u):$(id -g) to inner containers work well - i.e.
 #   they don't complain about not enough permissions to create dirs or files.
 # * To preserve the history, we instruct it to be saved into mounted folder by HISTFILE env var, but also have to add "-e HISTCONTROL=histappend".
-#   This is because we firstly detach from session (in background) and attach to it via exec (so that we can attach to it later on). 
+#   This is because we firstly detach from session (in background) and attach to it via exec (so that we can attach to it later on).
 #   Also -it options has to be present, even in the first container start to allow the history to be saved to file.
 #
 # * Where to get secrets from?:
@@ -78,10 +78,11 @@ puts "CONTAINER_ENGINE: #{$container_engine}"
 container_name = "ezy-tc-agent-local-#{current_dir_name}-#{$container_engine}"
 tcagent_extra_env_vars = ($container_engine == "docker") ? "-e DOCKER_IN_DOCKER=start" : ""
 tcagent_image = ($container_engine == "docker") ? "ezy.teamcity.agent:2023.11.4-linux-sudo-6" : "ezy.teamcity.agent:2023.05.4-linux-1"
-# Podman: As a non-root container user, container images are stored under your home directory ($HOME/.local/share/containers/storage/), instead of /var/lib/containers.
-# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux_atomic_host/7/html/managing_containers/finding_running_and_building_containers_with_podman_skopeo_and_buildah
-# Unfortunately, mounting this drive on Windwos (nfs fs) makes the directory owned by root, so not usable inside. The workaround would be to create
-# the volume on host system with buildagent as owner, however this would work only under linux.
+# * Podman: As a non-root container user, container images are stored under your home directory ($HOME/.local/share/containers/storage/), instead of /var/lib/containers.
+#   https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux_atomic_host/7/html/managing_containers/finding_running_and_building_containers_with_podman_skopeo_and_buildah
+#   Unfortunately, mounting this drive on Windwos (nfs fs) makes the directory owned by root, so not usable inside. The workaround would be to create
+#   the volume on host system with buildagent as owner, however this would work only under linux.
+# * Docker: can't share /var/lib/docker between multiple containers (at least when using hyper-v)
 tcagent_mount_container_engine_dir = ($container_engine == "docker") ? "-v #{$container_engine}_volumes_#{current_dir_name}:/var/lib/docker" : ""
 
 task :default do
