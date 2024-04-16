@@ -77,7 +77,7 @@ $container_engine = ENV["CONTAINER_ENGINE"] || "docker"
 puts "CONTAINER_ENGINE: #{$container_engine}"
 container_name = "ezy-tc-agent-local-#{current_dir_name}-#{$container_engine}"
 tcagent_extra_env_vars = ($container_engine == "docker") ? "-e DOCKER_IN_DOCKER=start" : ""
-tcagent_image = ($container_engine == "docker") ? "ezy.teamcity.agent:2023.11.4-linux-sudo-6" : "ezy.teamcity.agent:2023.05.4-linux-1"
+tcagent_image = ($container_engine == "docker") ? "ezy.teamcity.agent" : "ezy.teamcity.agent:2023.05.4-linux-1"
 # * Podman: As a non-root container user, container images are stored under your home directory ($HOME/.local/share/containers/storage/), instead of /var/lib/containers.
 #   https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux_atomic_host/7/html/managing_containers/finding_running_and_building_containers_with_podman_skopeo_and_buildah
 #   Unfortunately, mounting this drive on Windwos (nfs fs) makes the directory owned by root, so not usable inside. The workaround would be to create
@@ -96,6 +96,7 @@ task :default do
   else
     puts "Container #{container_name} does not exist, need to create it"
     sh "docker run -it -d \
+      --pull=always \
       --privileged \
       --name #{container_name} \
       #{tcagent_extra_env_vars} \
