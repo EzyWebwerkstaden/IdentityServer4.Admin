@@ -7,14 +7,14 @@
 #   Also -it options has to be present, even in the first container start to allow the history to be saved to file.
 #
 # * Where to get secrets from?:
-#   * GCR_USERNAME: ezydeploy"
-#   * GCR_PAT: 1Password: 'ezydeploy account on github.com' / 'ContainerRegistry PAT'
-#   * NUGET_SABRE_NEXUS_STAGING_API_KEY: 1Password: 'svc-ark-radixxezy' / 'NuGet API Key'
-#   * NEXUS_USER: 1Password: 'svc-ark-radixxezy' / 'user token name'
-#   * NEXUS_PASSWORD: 1Password: 'svc-ark-radixxezy' / 'pass code'
-#   * SCAN_USER: 1Password: 'svc-ark-radixxezy' / 'username'
-#   * SCAN_PASSWORD: 1Password: 'svc-ark-radixxezy' / 'promotion jenkins token (cicd)'
-#   * OCTOPUS_EZY_ONPREM_APIKEY: 1Password: 'Octopus Api Key (for GCP)' / 'password'
+#   * GCR_USERNAME: <your_github_username>
+#   * GCR_PAT: <your_PAT_value> / https://github.com/settings/tokens
+#   * NUGET_SABRE_NEXUS_STAGING_API_KEY: <your_Nexus_NuGet_api_key> / https://repository.sabre-gcp.com/#user/nugetapitoken
+#   * NEXUS_USER: 1Password: 'your_Nexus_user_token_name> / https://repository.sabre-gcp.com/#user/usertoken
+#   * NEXUS_PASSWORD: 1Password: 'your_Nexus_user_token_value> / https://repository.sabre-gcp.com/#user/usertoken
+#   * SCAN_USER: <your-SG-number>
+#   * SCAN_PASSWORD: <your_PromotionJenkins_token_value> / https://promote.repository.sabre-gcp.com/user/svc-ark-radixxezy@sgdcelab.sabre.com/configure 
+#   * OCTOPUS_SABRE_GKE_APIKEY: <your_Octopus_api_key> / https://ezy-octopus-server-radixx-ezyc-dev-ops.apps.dev-01.us-central1.dev.sabre-gcp.com/app#/Spaces-1/users/me/apiKeys
 #
 # * AWS secrets (only when needing to run tentancle from under tcagent. It's useful, when you build new image(s) and you don't want to wait until it's pushed to github and then downloaded directly to your machine)
 #   Obtain session token by "aws sts get-session-token --serial-number arn-of-your-mfa-device --token-code mfa-token"
@@ -42,12 +42,10 @@ Dir.mkdir(home_dot_ezy_build_env_dir) unless File.exists?(home_dot_ezy_build_env
 github_env_file = "#{home_dot_ezy_build_env_dir}/github_ezy.env"
 nexus_env_file = "#{home_dot_ezy_build_env_dir}/sabre_nexus.env"
 scan_env_file = "#{home_dot_ezy_build_env_dir}/sabre_scan.env"
-octopus_ezy_onprem_env_file = "#{home_dot_ezy_build_env_dir}/octopus_ezy_onprem.env"
 octopus_sabre_gke_env_file = "#{home_dot_ezy_build_env_dir}/octopus_sabre_gke.env"
 File.write(github_env_file, "GCR_USERNAME=#{ENV["GCR_USERNAME"]}\nGCR_PAT=#{ENV["GCR_PAT"]}") unless File.exists?(github_env_file)
 File.write(nexus_env_file, "NUGET_SABRE_NEXUS_STAGING_API_KEY=#{ENV["NUGET_SABRE_NEXUS_STAGING_API_KEY"]}\nNEXUS_USER=#{ENV["NEXUS_USER"]}\nNEXUS_PASSWORD=#{ENV["NEXUS_PASSWORD"]}") unless File.exists?(nexus_env_file)
 File.write(scan_env_file, "SCAN_USER=#{ENV["SCAN_USER"]}\nSCAN_PASSWORD=#{ENV["SCAN_PASSWORD"]}") unless File.exists?(scan_env_file)
-File.write(octopus_ezy_onprem_env_file, "OCTOPUS_APIKEY=#{ENV["OCTOPUS_EZY_ONPREM_APIKEY"]}") unless File.exists?(octopus_ezy_onprem_env_file)
 File.write(octopus_sabre_gke_env_file, "OCTOPUS_APIKEY=#{ENV["OCTOPUS_SABRE_GKE_APIKEY"]}") unless File.exists?(octopus_sabre_gke_env_file)
 
 # Write .env files for ezyDeploy
