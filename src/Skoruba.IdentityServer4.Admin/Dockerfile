@@ -25,7 +25,10 @@ RUN --mount=type=secret,id=github_ezy,uid=1000,gid=1000,uid=1000,gid=1000,dst=/e
       dotnet restore "src/Skoruba.IdentityServer4.Admin/Skoruba.IdentityServer4.Admin.csproj"
 COPY --chown=buildagent:buildagent . .
 WORKDIR "/src/src/Skoruba.IdentityServer4.Admin"
-RUN dotnet build "Skoruba.IdentityServer4.Admin.csproj" -c Release -o /app/build
+
+ARG version=0.1.0
+RUN mkdir -p /home/buildagent/build
+RUN dotnet build "Skoruba.IdentityServer4.Admin.csproj" -c Release -o /home/buildagent/build
 
 
 
@@ -35,7 +38,6 @@ FROM builder AS publish
 LABEL se.ezy.project=identityserver-admin \
   se.ezy.image-purpose=build
 
-ARG version=0.1.0
 RUN mkdir -p /home/buildagent/publish
 RUN --mount=type=secret,id=github_ezy,uid=1000,gid=1000,uid=1000,gid=1000,dst=/etc/secrets/github_ezy.env \
       export $(xargs < /etc/secrets/github_ezy.env) && \
