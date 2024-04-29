@@ -599,6 +599,9 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null, bool IsCalledFromRegisterWithoutUsername = false)
         {
+            // EZY-modification (RADEZYC-5343): Also disable registration in the POST method.
+            if (!_registerConfiguration.Enabled) return View(model);
+
             returnUrl = returnUrl ?? Url.Content("~/");
 
             ViewData["ReturnUrl"] = returnUrl;
