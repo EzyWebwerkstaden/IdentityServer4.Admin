@@ -7,6 +7,11 @@
         <DebugType>Full</DebugType>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugEzyNet' ">
+      <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+      <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+    </PropertyGroup>
+
     <ItemGroup>
         <PackageReference Include="FluentAssertions" Version="5.10.3" />
         <PackageReference Include="HtmlAgilityPack" Version="1.11.24" />

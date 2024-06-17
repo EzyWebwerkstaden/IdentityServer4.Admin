@@ -8,6 +8,13 @@
         <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <DockerfileContext>..\..</DockerfileContext>
+        <UseLocalReferencesEzyNet>false</UseLocalReferencesEzyNet>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugEzyNet' ">
+      <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+      <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+      <UseLocalReferencesEzyNet>true</UseLocalReferencesEzyNet>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,8 +23,6 @@
         <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="3.1.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI" Version="3.1.1" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="3.1.1" />
-        <PackageReference Include="EzyWebwerkstaden.EzyNet.AspNetCore" Version="1.0.5" />
-        <PackageReference Include="EzyWebwerkstaden.EzyNet.Gcp.SecretManager.SerilogSupport" Version="1.0.0" /> <!-- EZY-modification (EZYC-4328): GCP Secret Manager support  -->
         <PackageReference Include="Kralizek.Extensions.Configuration.AWSSecretsManager" Version="1.4.1" />  <!-- EZY-modification (EZYC-3029): support aws Secrets Manager -->
         <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="3.1.8" />
         <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="3.1.6" />
@@ -41,14 +46,26 @@
         <PackageReference Include="Serilog" Version="2.10.0" />
         <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="3.1.0" />
-        <PackageReference Include="Serilog.Enrichers.Environment" Version="2.1.3" />
-        <PackageReference Include="Serilog.Settings.Configuration" Version="3.1.0" />
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
         <PackageReference Include="Serilog.Sinks.Datadog.Logs" Version="0.5.2" />
         <PackageReference Include="Serilog.Sinks.GoogleCloudLogging" Version="3.5.0" />
         <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="3.1.0" />
         <PackageReference Include="Serilog.Sinks.Redis.List" Version="2.0.0-beta-0036" />
         <PackageReference Include="Skoruba.AuditLogging.EntityFramework" Version="1.0.0" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalReferencesEzyNet)' == 'false'">
+        <PackageReference Include="EzyWebwerkstaden.EzyNet.AspNetCore" Version="1.0.7" />
+        <PackageReference Include="EzyWebwerkstaden.EzyNet.Gcp.SecretManager.SerilogSupport" Version="1.2.6" />
+        <PackageReference Include="EzyWebwerkstaden.EzyNet.Serilog" Version="1.1.10" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(UseLocalReferencesEzyNet)' == 'true'">
+        <ProjectReference Include="..\..\..\ezyNet\src\EzyNet.AspNetCore\EzyNet.AspNetCore.csproj" />
+        <ProjectReference Include="..\..\..\ezyNet\src\EzyNet.Gcp.SecretManager.SerilogSupport\EzyNet.Gcp.SecretManager.SerilogSupport.csproj" />
+        <ProjectReference Include="..\..\..\ezyNet\src\EzyNet.Serilog\EzyNet.Serilog.csproj" />
     </ItemGroup>
 
     <ItemGroup>

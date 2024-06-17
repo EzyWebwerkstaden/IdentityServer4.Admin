@@ -9,6 +9,13 @@
       <PackageLicenseUrl>https://github.com/skoruba/IdentityServer4.Admin/blob/master/LICENSE.md</PackageLicenseUrl>
       <PackageProjectUrl>https://github.com/skoruba/IdentityServer4.Admin</PackageProjectUrl>
       <PackageIconUrl>https://raw.githubusercontent.com/skoruba/IdentityServer4.Admin/master/docs/Images/Skoruba.IdentityServer4.Admin-Logo-Nuget.png</PackageIconUrl>
+      <UseLocalReferencesEzyNet>false</UseLocalReferencesEzyNet>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'DebugEzyNet' ">
+    <DebugSymbols Condition=" '$(DebugSymbols)' == '' ">true</DebugSymbols>
+    <Optimize Condition=" '$(Optimize)' == '' ">false</Optimize>
+    <UseLocalReferencesEzyNet>true</UseLocalReferencesEzyNet>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +29,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Skoruba.IdentityServer4.Admin.BusinessLogic.Identity\Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseLocalReferencesEzyNet)' == 'false'">
+    <PackageReference Include="EzyWebwerkstaden.EzyNet.Serilog" Version="1.1.11" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseLocalReferencesEzyNet)' == 'true'">
+    <ProjectReference Include="..\..\..\ezyNet\src\EzyNet.Serilog\EzyNet.Serilog.csproj" />
   </ItemGroup>
 
 </Project>
