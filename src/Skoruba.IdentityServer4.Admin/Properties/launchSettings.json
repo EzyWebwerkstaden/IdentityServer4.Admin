@@ -12,14 +12,14 @@
             "commandName": "IISExpress",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "BookSecure/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "BookSecure/docker/IdentityServer/Admin/CustomSettings"
             }
         },
         "ezyc.id.admin": {
             "commandName": "Project",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "BookSecure/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "BookSecure/docker/IdentityServer/Admin/CustomSettings"
             },
             "applicationUrl": "http://localhost:9606"
         },
@@ -27,14 +27,14 @@
             "commandName": "IISExpress",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/Admin/CustomSettings"
             }
         },
         "ezypayment.id.admin": {
             "commandName": "Project",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/Admin/CustomSettings"
             },
             "applicationUrl": "http://localhost:8612"
         },
@@ -42,14 +42,14 @@
             "commandName": "IISExpress",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "VivaAerobus.Generic.Api/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "VivaAerobus.Generic.Api/docker/IdentityServer/Admin/CustomSettings"
             }
         },
         "vbgeneric.id.admin": {
             "commandName": "Project",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "VivaAerobus.Generic.Api/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "VivaAerobus.Generic.Api/docker/IdentityServer/Admin/CustomSettings"
             },
             "applicationUrl": "http://localhost:9506"
         },
@@ -57,14 +57,14 @@
             "commandName": "IISExpress",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "VivaAir.Generic.Api/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "VivaAir.Generic.Api/docker/IdentityServer/Admin/CustomSettings"
             }
         },
         "vivaair.id.admin": {
             "commandName": "Project",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "VivaAir/docker/IdentityServer/Admin"
+                "CUSTOM_SETTINGS_PATH" : "VivaAir/docker/IdentityServer/Admin/CustomSettings"
             },
             "applicationUrl": "http://localhost:9806"
         }

@@ -12,14 +12,14 @@
             "commandName": "IISExpress",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "BookSecure/docker/IdentityServer/STS.Identity"
+                "CUSTOM_SETTINGS_PATH" : "BookSecure/docker/IdentityServer/STS.Identity/CustomSettings"
             }
         },
         "ezyc.id.sts.identity": {
             "commandName": "Project",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "BookSecure/docker/IdentityServer/STS.Identity"
+                "CUSTOM_SETTINGS_PATH" : "BookSecure/docker/IdentityServer/STS.Identity/CustomSettings"
             },
             "applicationUrl": "http://localhost:9605"
         },
@@ -27,14 +27,14 @@
             "commandName": "IISExpress",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/STS.Identity"
+                "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/STS.Identity/CustomSettings"
             }
         },
         "ezypayment.id.sts.identity": {
             "commandName": "Project",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/STS.Identity"
+                "CUSTOM_SETTINGS_PATH" : "ezyPayment/docker/IdentityServer/STS.Identity/CustomSettings"
             },
             "applicationUrl": "http://localhost:8611"
         },
@@ -42,14 +42,14 @@
             "commandName": "IISExpress",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "VivaAerobus.Generic.Api/docker/IdentityServer/STS.Identity"
+                "CUSTOM_SETTINGS_PATH" : "VivaAerobus.Generic.Api/docker/IdentityServer/STS.Identity/CustomSettings"
             }
         },
         "vbgeneric.id.sts.identity": {
             "commandName": "Project",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "VivaAerobus.Generic.Api/docker/IdentityServer/STS.Identity"
+                "CUSTOM_SETTINGS_PATH" : "VivaAerobus.Generic.Api/docker/IdentityServer/STS.Identity/CustomSettings"
             },
             "applicationUrl": "http://localhost:9505"
         },
@@ -57,14 +57,14 @@
             "commandName": "IISExpress",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "VivaAir/docker/IdentityServer/STS.Identity"
+                "CUSTOM_SETTINGS_PATH" : "VivaAir/docker/IdentityServer/STS.Identity/CustomSettings"
             }
         },
         "vivaair.id.sts.identity": {
             "commandName": "Project",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
-                "CUSTOM_SETTINGS_PATH" : "VivaAir/docker/IdentityServer/STS.Identity"
+                "CUSTOM_SETTINGS_PATH" : "VivaAir/docker/IdentityServer/STS.Identity/CustomSettings"
             },
             "applicationUrl": "http://localhost:9805"
         }
