@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using EzyNet.Serilog.AuditLogs;
 using IdentityModel;
 using IdentityServer4;
 using IdentityServer4.Events;
@@ -25,6 +26,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Skoruba.IdentityServer4.Shared.Configuration.Identity;
+using Skoruba.IdentityServer4.Shared.Helpers;
 using Skoruba.IdentityServer4.STS.Identity.Configuration;
 using Skoruba.IdentityServer4.STS.Identity.Helpers;
 using Skoruba.IdentityServer4.STS.Identity.Helpers.Localization;
@@ -51,6 +53,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         private readonly RegisterConfiguration _registerConfiguration;
         private readonly IdentityOptions _identityOptions;
         private readonly ILogger<AccountController<TUser, TKey>> _logger;
+        private readonly IAuditLogger _auditLogger;
 
         public AccountController(
             UserResolver<TUser> userResolver,
@@ -65,7 +68,8 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             LoginConfiguration loginConfiguration,
             RegisterConfiguration registerConfiguration,
             IdentityOptions identityOptions,
-            ILogger<AccountController<TUser, TKey>> logger)
+            ILogger<AccountController<TUser, TKey>> logger, 
+            IAuditLogger auditLogger)
         {
             _userResolver = userResolver;
             _userManager = userManager;
@@ -80,6 +84,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             _registerConfiguration = registerConfiguration;
             _identityOptions = identityOptions;
             _logger = logger;
+            _auditLogger = auditLogger;
         }
 
         /// <summary>
@@ -115,6 +120,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             // the user clicked the "cancel" button
             if (button != "login")
             {
+                AuditLogInfo(nameof(Login), "cancelled", model.Username);
                 if (context != null)
                 {
                     // if the user cancels, send a result back into IdentityServer as if they 
@@ -146,6 +152,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                     if (result.Succeeded)
                     {
                         await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id.ToString(), user.UserName));
+                        AuditLogInfo(nameof(Login), "successful", model.Username, model.Username);
 
                         if (context != null)
                         {
@@ -190,6 +197,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             }
 
             // something went wrong, show form with error
+            AuditLogInfo(nameof(Login), "unsuccessful", model.Username);
             var vm = await BuildLoginViewModelAsync(model);
             return View(vm);
         }
@@ -241,11 +249,13 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 // to us after the user has logged out. this allows us to then
                 // complete our single sign-out processing.
                 string url = Url.Action("Logout", new { logoutId = vm.LogoutId });
+                AuditLogInfo(nameof(Logout), "external successful");
 
                 // this triggers a redirect to the external provider for sign-out
                 return SignOut(new AuthenticationProperties { RedirectUri = url }, vm.ExternalAuthenticationScheme);
             }
 
+            AuditLogInfo(nameof(Logout), "local successful");
             return View("LoggedOut", vm);
         }
 
@@ -306,6 +316,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 if (user == null || !await _userManager.IsEmailConfirmedAsync(user))
                 {
                     // Don't reveal that the user does not exist
+                    AuditLogInfo(nameof(ForgotPassword), "unsuccessful - does not exist", model.Username);
                     return View("ForgotPasswordConfirmation");
                 }
 
@@ -314,10 +325,12 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code }, HttpContext.Request.Scheme);
 
                 await _emailSender.SendEmailAsync(user.Email, _localizer["ResetPasswordTitle"], _localizer["ResetPasswordBody", HtmlEncoder.Default.Encode(callbackUrl)]);
+                AuditLogInfo(nameof(ForgotPassword), "successful - reset code sent", user.UserName, user.UserName);
 
                 return View("ForgotPasswordConfirmation");
             }
 
+            AuditLogInfo(nameof(ForgotPassword), "unsuccessful - invalid model", model.Username);
             return View(model);
         }
 
@@ -335,12 +348,14 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(ResetPassword), "model invalid", model.Email);
                 return View(model);
             }
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
                 // Don't reveal that the user does not exist
+                AuditLogInfo(nameof(ResetPassword), "unsuccessful - does not exist", model.Email);
                 return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
             }
 
@@ -349,10 +364,12 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
 
             if (result.Succeeded)
             {
+                AuditLogInfo(nameof(ResetPassword), "successful", user.UserName, user.UserName);
                 return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
             }
 
             AddErrors(result);
+            AuditLogInfo(nameof(ResetPassword), "unsuccessful - invalid model", user.UserName, user.UserName);
 
             return View();
         }
@@ -452,6 +469,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                     if (result.Succeeded)
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
+                        AuditLogInfo(nameof(ExternalLoginConfirmation), "successful", user.UserName, user.UserName);
 
                         return RedirectToLocal(returnUrl);
                     }
@@ -460,6 +478,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 AddErrors(result);
             }
 
+            AuditLogInfo(nameof(ExternalLoginConfirmation), "unsuccessful - invalid model", model.UserName);
             ViewData["LoginProvider"] = info.LoginProvider;
             ViewData["ReturnUrl"] = returnUrl;
 
@@ -491,12 +510,14 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(LoginWithRecoveryCode), "model invalid");
                 return View(model);
             }
 
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
+                AuditLogInfo(nameof(LoginWithRecoveryCode), "unsuccessful - does not exist");
                 throw new InvalidOperationException(_localizer["Unable2FA"]);
             }
 
@@ -506,15 +527,18 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
 
             if (result.Succeeded)
             {
+                AuditLogInfo(nameof(LoginWithRecoveryCode), "successful", user.UserName, user.UserName);
                 return LocalRedirect(string.IsNullOrEmpty(model.ReturnUrl) ? "~/" : model.ReturnUrl);
             }
 
             if (result.IsLockedOut)
             {
+                AuditLogInfo(nameof(LoginWithRecoveryCode), "unsuccessful - locked out", user.UserName, user.UserName);
                 return View("Lockout");
             }
 
             ModelState.AddModelError(string.Empty, _localizer["InvalidRecoveryCode"]);
+            AuditLogInfo(nameof(LoginWithRecoveryCode), "unsuccessful - invalid recovery code");
 
             return View(model);
         }
@@ -547,12 +571,14 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(LoginWith2fa), "model invalid");
                 return View(model);
             }
 
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
+                AuditLogInfo(nameof(LoginWith2fa), "unsuccessful - does not exist");
                 throw new InvalidOperationException(_localizer["Unable2FA"]);
             }
 
@@ -562,15 +588,18 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
 
             if (result.Succeeded)
             {
+                AuditLogInfo(nameof(LoginWith2fa), "successful", user.UserName, user.UserName);
                 return LocalRedirect(string.IsNullOrEmpty(model.ReturnUrl) ? "~/" : model.ReturnUrl);
             }
 
             if (result.IsLockedOut)
             {
+                AuditLogInfo(nameof(LoginWith2fa), "unsuccessful - locked out", user.UserName, user.UserName);
                 return View("Lockout");
             }
 
             ModelState.AddModelError(string.Empty, _localizer["InvalidAuthenticatorCode"]);
+            AuditLogInfo(nameof(LoginWith2fa), "unsuccessful - invalid authentication code");
 
             return View(model);
         }
@@ -606,7 +635,11 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
 
             ViewData["ReturnUrl"] = returnUrl;
 
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                AuditLogInfo(nameof(Register), "model invalid");
+                return View(model);
+            }
 
             var user = new TUser
             {
@@ -625,16 +658,19 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
 
                 if (_identityOptions.SignIn.RequireConfirmedAccount)
                 {
+                    AuditLogInfo(nameof(Register), "successful - require confirmed account");
                     return View("RegisterConfirmation");
                 }
                 else
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
+                    AuditLogInfo(nameof(Register), "successful");
                     return LocalRedirect(returnUrl);
                 }
             }
 
             AddErrors(result);
+            AuditLogInfo(nameof(Register), "unsuccessful - errors", model.UserName);
 
             // If we got this far, something failed, redisplay form
             if (IsCalledFromRegisterWithoutUsername)
@@ -667,7 +703,9 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 ConfirmPassword = model.ConfirmPassword
             };
 
-            return await Register(registerModel, returnUrl, true);
+            var result = await Register(registerModel, returnUrl, true);
+            AuditLogInfo(nameof(RegisterWithoutUsername), "successful", model.Email, model.Email);
+            return result;
         }
 
         /*****************************************/
@@ -813,6 +851,13 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             }
 
             return vm;
+        }
+
+        private void AuditLogInfo(string action, string operationStatus, string resourceId = null, string userId = null)
+        {
+            resourceId ??= User?.Identity?.Name;
+            userId ??= User?.Identity?.Name;
+            _auditLogger.Info(this, action, operationStatus, resourceId, "User", userId);
         }
     }
 }

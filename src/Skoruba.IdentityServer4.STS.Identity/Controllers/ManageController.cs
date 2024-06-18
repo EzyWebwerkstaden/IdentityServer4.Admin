@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using EzyNet.Serilog.AuditLogs;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Skoruba.IdentityServer4.Shared.Helpers;
 using Skoruba.IdentityServer4.STS.Identity.Helpers;
 using Skoruba.IdentityServer4.STS.Identity.Helpers.Localization;
 using Skoruba.IdentityServer4.STS.Identity.ViewModels.Manage;
@@ -28,6 +30,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         private readonly ILogger<ManageController<TUser, TKey>> _logger;
         private readonly IGenericControllerLocalizer<ManageController<TUser, TKey>> _localizer;
         private readonly UrlEncoder _urlEncoder;
+        private readonly IAuditLogger _auditLogger;
 
         private const string RecoveryCodesKey = nameof(RecoveryCodesKey);
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
@@ -35,7 +38,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         [TempData]
         public string StatusMessage { get; set; }
 
-        public ManageController(UserManager<TUser> userManager, SignInManager<TUser> signInManager, IEmailSender emailSender, ILogger<ManageController<TUser, TKey>> logger, IGenericControllerLocalizer<ManageController<TUser, TKey>> localizer, UrlEncoder urlEncoder)
+        public ManageController(UserManager<TUser> userManager, SignInManager<TUser> signInManager, IEmailSender emailSender, ILogger<ManageController<TUser, TKey>> logger, IGenericControllerLocalizer<ManageController<TUser, TKey>> localizer, UrlEncoder urlEncoder, IAuditLogger auditLogger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -43,6 +46,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             _logger = logger;
             _localizer = localizer;
             _urlEncoder = urlEncoder;
+            _auditLogger = auditLogger;
         }
 
         [HttpGet]
@@ -66,12 +70,14 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(Index), "unsuccessful - invalid model", model.Username);
                 return View(model);
             }
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(Index), "unsuccessful - does not exist", model.Username);
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
@@ -81,6 +87,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 var setEmailResult = await _userManager.SetEmailAsync(user, model.Email);
                 if (!setEmailResult.Succeeded)
                 {
+                    AuditLogInfo(nameof(Index), "unsuccessful - error setting email", model.Email, "User.Email");
                     throw new ApplicationException(_localizer["ErrorSettingEmail", user.Id]);
                 }
             }
@@ -91,6 +98,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, model.PhoneNumber);
                 if (!setPhoneResult.Succeeded)
                 {
+                    AuditLogInfo(nameof(Index), "unsuccessful - error setting phone", model.PhoneNumber, "User.PhoneNumber");
                     throw new ApplicationException(_localizer["ErrorSettingPhone", user.Id]);
                 }
             }
@@ -98,6 +106,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             await UpdateUserClaimsAsync(model, user);
 
             StatusMessage = _localizer["ProfileUpdated"];
+            AuditLogInfo(nameof(Index), "successful", model.Username);
 
             return RedirectToAction(nameof(Index));
         }
@@ -108,12 +117,14 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(SendVerificationEmail), "unsuccessful - invalid model", model.Username);
                 return View(model);
             }
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(SendVerificationEmail), "unsuccessful - does not exist", model.Username);
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
@@ -126,6 +137,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             await _emailSender.SendEmailAsync(model.Email, _localizer["ConfirmEmailTitle"], _localizer["ConfirmEmailBody", HtmlEncoder.Default.Encode(callbackUrl)]);
 
             StatusMessage = _localizer["VerificationSent"];
+            AuditLogInfo(nameof(SendVerificationEmail), "successful", model.Username);
 
             return RedirectToAction(nameof(Index));
         }
@@ -155,12 +167,14 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(ChangePassword), "unsuccessful - invalid model");
                 return View(model);
             }
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(ChangePassword), "unsuccessful - does not exist");
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
@@ -168,6 +182,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             if (!changePasswordResult.Succeeded)
             {
                 AddErrors(changePasswordResult);
+                AuditLogInfo(nameof(ChangePassword), "unsuccessful");
                 return View(model);
             }
 
@@ -175,6 +190,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             _logger.LogInformation(_localizer["PasswordChangedLog", user.UserName]);
 
             StatusMessage = _localizer["PasswordChanged"];
+            AuditLogInfo(nameof(ChangePassword), "successful");
 
             return RedirectToAction(nameof(ChangePassword));
         }
@@ -205,12 +221,14 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(SetPassword), "unsuccessful - invalid model");
                 return View(model);
             }
 
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(SetPassword), "unsuccessful - does not exist");
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
@@ -218,11 +236,13 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             if (!addPasswordResult.Succeeded)
             {
                 AddErrors(addPasswordResult);
+                AuditLogInfo(nameof(SetPassword), "unsuccessful");
                 return View(model);
             }
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = _localizer["PasswordSet"];
+            AuditLogInfo(nameof(SetPassword), "successful");
 
             return RedirectToAction(nameof(SetPassword));
         }
@@ -246,6 +266,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(DownloadPersonalData), "unsuccessful - does not exist");
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
@@ -253,8 +274,9 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
 
             var personalDataProps = typeof(TUser).GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
             var personalData = personalDataProps.ToDictionary(p => p.Name, p => p.GetValue(user)?.ToString() ?? "null");
-
             Response.Headers.Add("Content-Disposition", "attachment; filename=PersonalData.json");
+            AuditLogInfo(nameof(DownloadPersonalData), "successful");
+            
             return new FileContentResult(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(personalData)), "text/json");
         }
 
@@ -282,6 +304,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(DeletePersonalData), "unsuccessful - does not exist");
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
@@ -291,6 +314,8 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 if (!await _userManager.CheckPasswordAsync(user, deletePersonalDataViewModel.Password))
                 {
                     ModelState.AddModelError(string.Empty, _localizer["PasswordNotCorrect"]);
+                    AuditLogInfo(nameof(DeletePersonalData), "unsuccessful - password not correct");
+                    
                     return View(deletePersonalDataViewModel);
                 }
             }
@@ -299,12 +324,14 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             var userId = await _userManager.GetUserIdAsync(user);
             if (!result.Succeeded)
             {
+                AuditLogInfo(nameof(DeletePersonalData), "unsuccessful - error deleting user");
                 throw new InvalidOperationException(_localizer["ErrorDeletingUser", user.Id]);
             }
 
             await _signInManager.SignOutAsync();
 
             _logger.LogInformation(_localizer["DeletePersonalData"], userId);
+            AuditLogInfo(nameof(DeletePersonalData), "successful");
 
             return Redirect("~/");
         }
@@ -316,17 +343,20 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(RemoveLogin), "unsuccessful - does not exist");
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
             var result = await _userManager.RemoveLoginAsync(user, model.LoginProvider, model.ProviderKey);
             if (!result.Succeeded)
             {
+                AuditLogInfo(nameof(RemoveLogin), "unsuccessful - error removing external login");
                 throw new ApplicationException(_localizer["ErrorRemovingExternalLogin", user.Id]);
             }
 
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = _localizer["ExternalLoginRemoved"];
+            AuditLogInfo(nameof(RemoveLogin), "successful");
 
             return RedirectToAction(nameof(ExternalLogins));
         }
@@ -394,6 +424,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             // Request a redirect to the external login provider to link a login for the current user
             var redirectUrl = Url.Action(nameof(LinkLoginCallback));
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, _userManager.GetUserId(User));
+            AuditLogInfo(nameof(LinkLogin), "successful");
 
             return new ChallengeResult(provider, properties);
         }
@@ -405,11 +436,13 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(GenerateRecoveryCodes), "unsuccessful - does not exist");
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
             if (!user.TwoFactorEnabled)
             {
+                AuditLogInfo(nameof(GenerateRecoveryCodes), "unsuccessful - error generate code without 2fa");
                 AddError(_localizer["ErrorGenerateCodesWithout2FA"]);
                 return View();
             }
@@ -417,7 +450,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
 
             _logger.LogInformation(_localizer["UserGenerated2FACodes", user.Id]);
-
+            AuditLogInfo(nameof(GenerateRecoveryCodes), "successful");
             var model = new ShowRecoveryCodesViewModel { RecoveryCodes = recoveryCodes.ToArray() };
 
             return View(nameof(ShowRecoveryCodes), model);
@@ -463,12 +496,13 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(ForgetTwoFactorClient), "unsuccessful - does not exist");
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
             await _signInManager.ForgetTwoFactorClientAsync();
-
             StatusMessage = _localizer["SuccessForgetBrowser2FA"];
+            AuditLogInfo(nameof(ForgetTwoFactorClient), "successful");
 
             return RedirectToAction(nameof(TwoFactorAuthentication));
         }
@@ -497,16 +531,19 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(Disable2fa), "unsuccessful - does not exist");
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
             var disable2faResult = await _userManager.SetTwoFactorEnabledAsync(user, false);
             if (!disable2faResult.Succeeded)
             {
+                AuditLogInfo(nameof(Disable2fa), "unsuccessful - error disable 2fa");
                 throw new ApplicationException(_localizer["ErrorDisable2FA", user.Id]);
             }
 
             _logger.LogInformation(_localizer["SuccessDisabled2FA", user.Id]);
+            AuditLogInfo(nameof(Disable2fa), "successful");
 
             return RedirectToAction(nameof(TwoFactorAuthentication));
         }
@@ -518,12 +555,14 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(ResetAuthenticator), "unsuccessful - does not exist");
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
             await _userManager.SetTwoFactorEnabledAsync(user, false);
             await _userManager.ResetAuthenticatorKeyAsync(user);
             _logger.LogInformation(_localizer["SuccessResetAuthenticationKey", user.Id]);
+            AuditLogInfo(nameof(ResetAuthenticator), "successful");
 
             return RedirectToAction(nameof(EnableAuthenticator));
         }
@@ -556,11 +595,13 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
+                AuditLogInfo(nameof(EnableAuthenticator), "unsuccessful - does not exist");
                 return NotFound(_localizer["UserNotFound", _userManager.GetUserId(User)]);
             }
 
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(EnableAuthenticator), "unsuccessful - invalid model state");
                 await LoadSharedKeyAndQrCodeUriAsync(user, model);
                 return View(model);
             }
@@ -574,6 +615,8 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             {
                 ModelState.AddModelError(_localizer["ErrorCode"], _localizer["InvalidVerificationCode"]);
                 await LoadSharedKeyAndQrCodeUriAsync(user, model);
+                AuditLogInfo(nameof(EnableAuthenticator), "unsuccessful - invalid verification code");
+                
                 return View(model);
             }
 
@@ -583,6 +626,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
             _logger.LogInformation(_localizer["SuccessUserEnabled2FA"], userId);
 
             StatusMessage = _localizer["AuthenticatorVerified"];
+            AuditLogInfo(nameof(EnableAuthenticator), "successful");
 
             if (await _userManager.CountRecoveryCodesAsync(user) == 0)
             {
@@ -717,6 +761,13 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         private void AddError(string description, string title = "")
         {
             ModelState.AddModelError(title, description);
+        }
+
+        private void AuditLogInfo(string action, string operationStatus, string resourceId = null, string resourceType = null)
+        {
+            resourceType ??= "User";
+            resourceId ??= User?.Identity?.Name;
+            _auditLogger.Info(this, action, operationStatus, resourceId, resourceType, User?.Identity?.Name);
         }
     }
 }

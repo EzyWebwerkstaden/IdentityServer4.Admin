@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using EzyNet.Serilog.AuditLogs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -8,6 +9,7 @@ using Skoruba.IdentityServer4.Admin.BusinessLogic.Helpers;
 using Skoruba.IdentityServer4.Admin.BusinessLogic.Services.Interfaces;
 using Skoruba.IdentityServer4.Admin.Configuration.Constants;
 using Skoruba.IdentityServer4.Admin.ExceptionHandling;
+using Skoruba.IdentityServer4.Shared.Helpers;
 
 namespace Skoruba.IdentityServer4.Admin.Controllers
 {
@@ -19,18 +21,21 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         private readonly IApiResourceService _apiResourceService;
         private readonly IClientService _clientService;
         private readonly IStringLocalizer<ConfigurationController> _localizer;
+        private readonly IAuditLogger _auditLogger;
 
         public ConfigurationController(IIdentityResourceService identityResourceService,
             IApiResourceService apiResourceService,
             IClientService clientService,
             IStringLocalizer<ConfigurationController> localizer,
-            ILogger<ConfigurationController> logger)
+            ILogger<ConfigurationController> logger, 
+            IAuditLogger auditLogger)
             : base(logger)
         {
             _identityResourceService = identityResourceService;
             _apiResourceService = apiResourceService;
             _clientService = clientService;
             _localizer = localizer;
+            _auditLogger = auditLogger;
         }
 
         [HttpGet]
@@ -58,6 +63,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
 
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(Client), "unsuccessful - invalid model state", client.ClientName, "Client");
                 return View(client);
             }
 
@@ -66,6 +72,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             {
                 var clientId = await _clientService.AddClientAsync(client);
                 SuccessNotification(string.Format(_localizer["SuccessAddClient"], client.ClientId), _localizer["SuccessTitle"]);
+                AuditLogInfo(nameof(Client), "successful - new client", client.ClientName, "Client");
 
                 return RedirectToAction(nameof(Client), new { Id = clientId });
             }
@@ -73,6 +80,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             //Update client
             await _clientService.UpdateClientAsync(client);
             SuccessNotification(string.Format(_localizer["SuccessUpdateClient"], client.ClientId), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(Client), "successful - update client", client.ClientName, "Client");
 
             return RedirectToAction(nameof(Client), new { client.Id });
         }
@@ -94,11 +102,13 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(ClientClone), "unsuccessful - invalid model state", client.ClientName, "Client");
                 return View(client);
             }
 
             var newClientId = await _clientService.CloneClientAsync(client);
             SuccessNotification(string.Format(_localizer["SuccessClientClone"], client.ClientId), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ClientClone), "successful - client cloned", newClientId.ToString(), "Client");
 
             return RedirectToAction(nameof(Client), new { Id = newClientId });
         }
@@ -120,6 +130,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             await _clientService.RemoveClientAsync(client);
 
             SuccessNotification(_localizer["SuccessClientDelete"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ClientDelete), "successful", client.ClientName, "Client");
 
             return RedirectToAction(nameof(Clients));
         }
@@ -160,11 +171,13 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(ApiResourceProperties), "unsuccessful - invalid model state", apiResourceProperty.ApiResourceName, "ApiResource");
                 return View(apiResourceProperty);
             }
 
             await _apiResourceService.AddApiResourcePropertyAsync(apiResourceProperty);
             SuccessNotification(string.Format(_localizer["SuccessAddApiResourceProperty"], apiResourceProperty.Key, apiResourceProperty.ApiResourceName), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ApiResourceProperties), "successful", apiResourceProperty.ApiResourceName, "ApiResource");
 
             return RedirectToAction(nameof(ApiResourceProperties), new { Id = apiResourceProperty.ApiResourceId });
         }
@@ -185,11 +198,13 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(IdentityResourceProperties), "unsuccessful - invalid model state", identityResourceProperty.IdentityResourceName, "IdentityResource");
                 return View(identityResourceProperty);
             }
 
             await _identityResourceService.AddIdentityResourcePropertyAsync(identityResourceProperty);
             SuccessNotification(string.Format(_localizer["SuccessAddIdentityResourceProperty"], identityResourceProperty.Value, identityResourceProperty.IdentityResourceName), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(IdentityResourceProperties), "successful", identityResourceProperty.IdentityResourceName, "IdentityResource");
 
             return RedirectToAction(nameof(IdentityResourceProperties), new { Id = identityResourceProperty.IdentityResourceId });
         }
@@ -200,11 +215,13 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(ClientProperties), "unsuccessful - invalid model state", clientProperty.ClientName, "Client");
                 return View(clientProperty);
             }
 
             await _clientService.AddClientPropertyAsync(clientProperty);
             SuccessNotification(string.Format(_localizer["SuccessAddClientProperty"], clientProperty.ClientId, clientProperty.ClientName), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ClientProperties), "successful", clientProperty.ClientName, "Client");
 
             return RedirectToAction(nameof(ClientProperties), new { Id = clientProperty.ClientId });
         }
@@ -215,11 +232,13 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(ClientClaims), "unsuccessful - invalid model state", clientClaim.ClientName, "Client");
                 return View(clientClaim);
             }
 
             await _clientService.AddClientClaimAsync(clientClaim);
             SuccessNotification(string.Format(_localizer["SuccessAddClientClaim"], clientClaim.Value, clientClaim.ClientName), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ClientClaims), "successful", clientClaim.ClientName, "Client");
 
             return RedirectToAction(nameof(ClientClaims), new { Id = clientClaim.ClientId });
         }
@@ -269,6 +288,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _clientService.DeleteClientClaimAsync(clientClaim);
             SuccessNotification(_localizer["SuccessDeleteClientClaim"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ClientClaimDelete), "successful", clientClaim.ClientName, "Client");
 
             return RedirectToAction(nameof(ClientClaims), new { Id = clientClaim.ClientId });
         }
@@ -279,6 +299,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _clientService.DeleteClientPropertyAsync(clientProperty);
             SuccessNotification(_localizer["SuccessDeleteClientProperty"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ClientPropertyDelete), "successful", clientProperty.ClientName, "Client");
 
             return RedirectToAction(nameof(ClientProperties), new { Id = clientProperty.ClientId });
         }
@@ -289,6 +310,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _apiResourceService.DeleteApiResourcePropertyAsync(apiResourceProperty);
             SuccessNotification(_localizer["SuccessDeleteApiResourceProperty"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ApiResourcePropertyDelete), "successful", apiResourceProperty.ApiResourceName, "ApiResource");
 
             return RedirectToAction(nameof(ApiResourceProperties), new { Id = apiResourceProperty.ApiResourceId });
         }
@@ -299,6 +321,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _identityResourceService.DeleteIdentityResourcePropertyAsync(identityResourceProperty);
             SuccessNotification(_localizer["SuccessDeleteIdentityResourceProperty"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(IdentityResourcePropertyDelete), "successful", identityResourceProperty.IdentityResourceName, "identityResource");
 
             return RedirectToAction(nameof(IdentityResourceProperties), new { Id = identityResourceProperty.IdentityResourceId });
         }
@@ -320,6 +343,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _clientService.AddClientSecretAsync(clientSecret);
             SuccessNotification(string.Format(_localizer["SuccessAddClientSecret"], clientSecret.ClientName), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ClientSecrets), "successful", clientSecret.ClientName, "Client");
 
             return RedirectToAction(nameof(ClientSecrets), new { Id = clientSecret.ClientId });
         }
@@ -391,6 +415,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _identityResourceService.DeleteIdentityResourceAsync(identityResource);
             SuccessNotification(_localizer["SuccessDeleteIdentityResource"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(IdentityResourceDelete), "successful", identityResource.Name, "IdentityResource");
 
             return RedirectToAction(nameof(IdentityResources));
         }
@@ -401,6 +426,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(IdentityResource), "unsuccessful - invalid model state", identityResource.Name, "IdentityResource");
                 return View(identityResource);
             }
 
@@ -419,6 +445,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             }
 
             SuccessNotification(string.Format(_localizer["SuccessAddIdentityResource"], identityResource.Name), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(IdentityResource), "successful", identityResource.Name, "IdentityResource");
 
             return RedirectToAction(nameof(IdentityResource), new { Id = identityResourceId });
         }
@@ -429,6 +456,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(ApiResource), "unsuccessful - invalid model state", apiResource.Name, "ApiResource");
                 return View(apiResource);
             }
 
@@ -447,6 +475,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             }
 
             SuccessNotification(string.Format(_localizer["SuccessAddApiResource"], apiResource.Name), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ApiResource), "successful", apiResource.Name, "ApiResource");
 
             return RedirectToAction(nameof(ApiResource), new { Id = apiResourceId });
         }
@@ -467,6 +496,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _apiResourceService.DeleteApiResourceAsync(apiResource);
             SuccessNotification(_localizer["SuccessDeleteApiResource"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ApiResourceDelete), "successful", apiResource.Name, "ApiResource");
 
             return RedirectToAction(nameof(ApiResources));
         }
@@ -504,11 +534,13 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(ApiSecrets), "unsuccessful - invalid model state", apiSecret.ApiResourceName, "ApiResource");
                 return View(apiSecret);
             }
 
             await _apiResourceService.AddApiSecretAsync(apiSecret);
             SuccessNotification(_localizer["SuccessAddApiSecret"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ApiSecrets), "successful", apiSecret.ApiResourceName, "ApiResource");
 
             return RedirectToAction(nameof(ApiSecrets), new { Id = apiSecret.ApiResourceId });
         }
@@ -537,6 +569,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(ApiScopes), "unsuccessful - invalid model state", apiScope.ResourceName, "ApiResource");
                 return View(apiScope);
             }
 
@@ -555,6 +588,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             }
 
             SuccessNotification(string.Format(_localizer["SuccessAddApiScope"], apiScope.Name), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ApiScopes), "successful", apiScope.ApiScopeId.ToString(), "ApiScope");
 
             return RedirectToAction(nameof(ApiScopes), new { Id = apiScope.ApiResourceId, Scope = apiScopeId });
         }
@@ -575,6 +609,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _apiResourceService.DeleteApiScopeAsync(apiScope);
             SuccessNotification(_localizer["SuccessDeleteApiScope"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ApiScopeDelete), "successful", apiScope.ApiScopeId.ToString(), "ApiScope");
 
             return RedirectToAction(nameof(ApiScopes), new { Id = apiScope.ApiResourceId });
         }
@@ -613,6 +648,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _apiResourceService.DeleteApiSecretAsync(apiSecret);
             SuccessNotification(_localizer["SuccessDeleteApiSecret"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(ApiSecretDelete), "successful", apiSecret.ApiResourceName, "ApiResource");
 
             return RedirectToAction(nameof(ApiSecrets), new { Id = apiSecret.ApiResourceId });
         }
@@ -631,6 +667,11 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             var identityResource = await _identityResourceService.GetIdentityResourceAsync(id);
 
             return View(identityResource);
+        }
+
+        private void AuditLogInfo(string action, string operationStatus, string resourceId = null, string resourceType = null)
+        {
+            _auditLogger.Info(this, action, operationStatus, resourceId, resourceType);
         }
     }
 }

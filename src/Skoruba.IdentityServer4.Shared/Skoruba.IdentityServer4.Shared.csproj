@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseLocalReferencesEzyNet)' == 'false'">
-    <PackageReference Include="EzyWebwerkstaden.EzyNet.Serilog" Version="1.1.11" />
+    <PackageReference Include="EzyWebwerkstaden.EzyNet.Serilog" Version="1.1.12" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UseLocalReferencesEzyNet)' == 'true'">
