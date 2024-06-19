@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using EzyNet.Serilog.AuditLogs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -8,6 +9,7 @@ using Skoruba.IdentityServer4.Admin.BusinessLogic.Identity.Services.Interfaces;
 using Skoruba.IdentityServer4.Admin.ExceptionHandling;
 using Skoruba.IdentityServer4.Admin.Helpers;
 using Skoruba.IdentityServer4.Admin.Configuration.Constants;
+using Skoruba.IdentityServer4.Shared.Helpers;
 
 namespace Skoruba.IdentityServer4.Admin.Controllers
 {
@@ -17,13 +19,16 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
     {
         private readonly IPersistedGrantAspNetIdentityService _persistedGrantService;
         private readonly IStringLocalizer<GrantController> _localizer;
+        private readonly IAuditLogger _auditLogger;
 
         public GrantController(IPersistedGrantAspNetIdentityService persistedGrantService,
             ILogger<ConfigurationController> logger,
-            IStringLocalizer<GrantController> localizer) : base(logger)
+            IStringLocalizer<GrantController> localizer, 
+            IAuditLogger auditLogger) : base(logger)
         {
             _persistedGrantService = persistedGrantService;
             _localizer = localizer;
+            _auditLogger = auditLogger;
         }
 
         [HttpGet]
@@ -54,6 +59,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             await _persistedGrantService.DeletePersistedGrantAsync(grant.Key);
 
             SuccessNotification(_localizer["SuccessPersistedGrantDelete"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(PersistedGrantDelete), "successful", grant.Key);
 
             return RedirectToAction(nameof(PersistedGrants));
         }
@@ -65,6 +71,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             await _persistedGrantService.DeletePersistedGrantsAsync(grants.SubjectId);
 
             SuccessNotification(_localizer["SuccessPersistedGrantsDelete"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(PersistedGrantsDelete), "successful", grants.GetAuditLogResourceId());
 
             return RedirectToAction(nameof(PersistedGrants));
         }
@@ -77,6 +84,12 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             persistedGrants.SubjectId = id;
 
             return View(persistedGrants);
+        }
+
+        private void AuditLogInfo(string action, string operationStatus, string resourceId = null, string resourceType = null)
+        {
+            resourceType ??= "Grant";
+            _auditLogger.Info(this, action, operationStatus, resourceId, resourceType);
         }
     }
 }

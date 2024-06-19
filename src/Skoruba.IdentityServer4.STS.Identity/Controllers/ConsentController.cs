@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 // Original file: https://github.com/IdentityServer/IdentityServer4.Quickstart.UI
-// Modified by Jan Škoruba
+// Modified by Jan ï¿½koruba
 
 using System.Linq;
 using System.Threading.Tasks;
+using EzyNet.Serilog.AuditLogs;
 using IdentityServer4;
 using IdentityServer4.Events;
 using IdentityServer4.Extensions;
@@ -15,6 +16,7 @@ using IdentityServer4.Stores;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Skoruba.IdentityServer4.Shared.Helpers;
 using Skoruba.IdentityServer4.STS.Identity.Configuration;
 using Skoruba.IdentityServer4.STS.Identity.Helpers;
 using Skoruba.IdentityServer4.STS.Identity.ViewModels.Account;
@@ -34,19 +36,22 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
         private readonly IResourceStore _resourceStore;
         private readonly IEventService _events;
         private readonly ILogger<ConsentController> _logger;
+        private readonly IAuditLogger _auditLogger;
 
         public ConsentController(
             IIdentityServerInteractionService interaction,
             IClientStore clientStore,
             IResourceStore resourceStore,
             IEventService events,
-            ILogger<ConsentController> logger)
+            ILogger<ConsentController> logger, 
+            IAuditLogger auditLogger)
         {
             _interaction = interaction;
             _clientStore = clientStore;
             _resourceStore = resourceStore;
             _events = events;
             _logger = logger;
+            _auditLogger = auditLogger;
         }
 
         /// <summary>
@@ -77,6 +82,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
 
             if (result.IsRedirect)
             {
+                AuditLogInfo(nameof(Index), "redirect", model.GetAuditLogResourceId());
                 if (await _clientStore.IsPkceClientAsync(result.ClientId))
                 {
                     // if the client is PKCE then we assume it's native, so this change in how to
@@ -89,7 +95,12 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
 
             if (result.HasValidationError)
             {
+                AuditLogInfo(nameof(Index), "unsuccessful", model.GetAuditLogResourceId());
                 ModelState.AddModelError(string.Empty, result.ValidationError);
+            }
+            else
+            {
+                AuditLogInfo(nameof(Index), "successful", model.GetAuditLogResourceId());
             }
 
             if (result.ShowView)
@@ -267,6 +278,12 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 Emphasize = true,
                 Checked = check
             };
+        }
+
+        private void AuditLogInfo(string action, string operationStatus, string resourceId = null, string resourceType = null, string userId = null)
+        {
+            resourceType ??= "Consent";
+            _auditLogger.Info(this, action, operationStatus, resourceId, resourceType, userId);
         }
     }
 }

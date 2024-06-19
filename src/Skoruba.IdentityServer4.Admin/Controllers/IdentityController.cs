@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using EzyNet.Serilog.AuditLogs;
 using IdentityServer4.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,6 +14,7 @@ using Skoruba.IdentityServer4.Admin.BusinessLogic.Shared.Dtos.Common;
 using Skoruba.IdentityServer4.Admin.Configuration.Constants;
 using Skoruba.IdentityServer4.Admin.ExceptionHandling;
 using Skoruba.IdentityServer4.Admin.Helpers.Localization;
+using Skoruba.IdentityServer4.Shared.Helpers;
 
 namespace Skoruba.IdentityServer4.Admin.Controllers
 {
@@ -49,16 +51,20 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             TUsersDto, TRolesDto, TUserRolesDto, TUserClaimsDto,
             TUserProviderDto, TUserProvidersDto, TUserChangePasswordDto, TRoleClaimsDto, TUserClaimDto, TRoleClaimDto>> _localizer;
 
+        private readonly IAuditLogger _auditLogger;
+
         public IdentityController(IIdentityService<TUserDto, TRoleDto, TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken,
                 TUsersDto, TRolesDto, TUserRolesDto, TUserClaimsDto,
                 TUserProviderDto, TUserProvidersDto, TUserChangePasswordDto, TRoleClaimsDto, TUserClaimDto, TRoleClaimDto> identityService,
             ILogger<ConfigurationController> logger,
             IGenericControllerLocalizer<IdentityController<TUserDto, TRoleDto, TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken,
                 TUsersDto, TRolesDto, TUserRolesDto, TUserClaimsDto,
-                TUserProviderDto, TUserProvidersDto, TUserChangePasswordDto, TRoleClaimsDto, TUserClaimDto, TRoleClaimDto>> localizer) : base(logger)
+                TUserProviderDto, TUserProvidersDto, TUserChangePasswordDto, TRoleClaimsDto, TUserClaimDto, TRoleClaimDto>> localizer, 
+            IAuditLogger auditLogger) : base(logger)
         {
             _identityService = identityService;
             _localizer = localizer;
+            _auditLogger = auditLogger;
         }
 
         [HttpGet]
@@ -91,6 +97,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(Role), "unsuccessful - invalid model state", role.Name, "Role");
                 return View(role);
             }
 
@@ -108,6 +115,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             }
 
             SuccessNotification(string.Format(_localizer["SuccessCreateRole"], role.Name), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(Role), "successful", role.Name, "Role");
 
             return RedirectToAction(nameof(Role), new { Id = roleId });
         }
@@ -139,6 +147,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(UserProfile), "unsuccessful - invalid model state", user.UserName, "User");
                 return View(user);
             }
 
@@ -156,6 +165,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             }
 
             SuccessNotification(string.Format(_localizer["SuccessCreateUser"], user.UserName), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(UserProfile), "successful", user.UserName, "User");
 
             return RedirectToAction(nameof(UserProfile), new { Id = userId });
         }
@@ -194,6 +204,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _identityService.CreateUserRoleAsync(role);
             SuccessNotification(_localizer["SuccessCreateUserRole"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(UserRoles), "successful", $"{role.RoleId}_{role.UserName}", "UserRole");
 
             return RedirectToAction(nameof(UserRoles), new { Id = role.UserId });
         }
@@ -224,6 +235,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _identityService.DeleteUserRoleAsync(role);
             SuccessNotification(_localizer["SuccessDeleteUserRole"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(UserRolesDelete), "successful", $"{role.RoleId}_{role.UserName}", "UserRole");
 
             return RedirectToAction(nameof(UserRoles), new { Id = role.UserId });
         }
@@ -234,11 +246,13 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(UserClaims), "unsuccessful - invalid model state", $"{claim.ClaimValue}_{claim.UserName}", "UserClaim");
                 return View(claim);
             }
 
             await _identityService.CreateUserClaimsAsync(claim);
             SuccessNotification(string.Format(_localizer["SuccessCreateUserClaims"], claim.ClaimType, claim.ClaimValue), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(UserClaims), "successful", $"{claim.ClaimValue}_{claim.UserName}", "UserClaim");
 
             return RedirectToAction(nameof(UserClaims), new { Id = claim.UserId });
         }
@@ -275,6 +289,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _identityService.DeleteUserClaimAsync(claim);
             SuccessNotification(_localizer["SuccessDeleteUserClaims"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(UserClaimsDelete), "successful", $"{claim.ClaimValue}_{claim.UserName}", "UserClaim");
 
             return RedirectToAction(nameof(UserClaims), new { Id = claim.UserId });
         }
@@ -306,6 +321,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _identityService.DeleteUserProvidersAsync(provider);
             SuccessNotification(_localizer["SuccessDeleteUserProviders"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(UserProvidersDelete), "successful", $"{provider.ProviderKey}_{provider.UserName}", "UserProvider");
 
             return RedirectToAction(nameof(UserProviders), new { Id = provider.UserId });
         }
@@ -327,6 +343,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(UserChangePassword), "unsuccessful - invalid model state", userPassword.UserName, "User");
                 return View(userPassword);
             }
 
@@ -335,10 +352,12 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             if (!identityResult.Errors.Any())
             {
                 SuccessNotification(_localizer["SuccessUserChangePassword"], _localizer["SuccessTitle"]);
+                AuditLogInfo(nameof(UserChangePassword), "successful", userPassword.UserName, "User");
 
                 return RedirectToAction("UserProfile", new { Id = userPassword.UserId });
             }
 
+            AuditLogInfo(nameof(UserChangePassword), "unsuccessful - identity errors", userPassword.UserName, "User");
             foreach (var error in identityResult.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
@@ -353,11 +372,13 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
+                AuditLogInfo(nameof(RoleClaims), "unsuccessful - invalid model state", $"{claim.ClaimValue}_{claim.RoleName}", "RoleClaim");
                 return View(claim);
             }
 
             await _identityService.CreateRoleClaimsAsync(claim);
             SuccessNotification(string.Format(_localizer["SuccessCreateRoleClaims"], claim.ClaimType, claim.ClaimValue), _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(RoleClaims), "successful", $"{claim.ClaimValue}_{claim.RoleName}", "RoleClaim");
 
             return RedirectToAction(nameof(RoleClaims), new { Id = claim.RoleId });
         }
@@ -390,6 +411,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _identityService.DeleteRoleClaimAsync(claim);
             SuccessNotification(_localizer["SuccessDeleteRoleClaims"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(RoleClaimsDelete), "successful", $"{claim.ClaimValue}_{claim.RoleName}", "RoleClaim");
 
             return RedirectToAction(nameof(RoleClaims), new { Id = claim.RoleId });
         }
@@ -411,6 +433,7 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
         {
             await _identityService.DeleteRoleAsync(role);
             SuccessNotification(_localizer["SuccessDeleteRole"], _localizer["SuccessTitle"]);
+            AuditLogInfo(nameof(RoleDelete), "successful", role.Name, "Role");
 
             return RedirectToAction(nameof(Roles));
         }
@@ -423,12 +446,14 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             if (user.Id.ToString() == currentUserId)
             {
                 CreateNotification(Helpers.NotificationHelpers.AlertType.Warning, _localizer["ErrorDeleteUser_CannotSelfDelete"]);
+                AuditLogInfo(nameof(UserDelete), "unsuccessful - can not self delete", user.UserName, "User");
                 return RedirectToAction(nameof(UserDelete), user.Id);
             }
             else
             {
                 await _identityService.DeleteUserAsync(user.Id.ToString(), user);
                 SuccessNotification(_localizer["SuccessDeleteUser"], _localizer["SuccessTitle"]);
+                AuditLogInfo(nameof(UserDelete), "successful", user.UserName, "User");
 
                 return RedirectToAction(nameof(Users));
             }
@@ -443,6 +468,11 @@ namespace Skoruba.IdentityServer4.Admin.Controllers
             if (user == null) return NotFound();
 
             return View(user);
+        }
+
+        private void AuditLogInfo(string action, string operationStatus, string resourceId = null, string resourceType = null)
+        {
+            _auditLogger.Info(this, action, operationStatus, resourceId, resourceType);
         }
     }
 }

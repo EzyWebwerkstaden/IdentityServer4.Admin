@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
 using EzyNet.Gcp.SecretManager.SerilogSupport;
+using EzyNet.Serilog.Bootstrap;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-using Serilog.Filters;
 using Skoruba.IdentityServer4.STS.Identity.Configuration;
 
 namespace Skoruba.IdentityServer4.STS.Identity
@@ -25,15 +25,13 @@ namespace Skoruba.IdentityServer4.STS.Identity
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             _subEnvironment = Environment.GetEnvironmentVariable("SUB_ENVIRONMENT");
             _fp = GetConsumerProjectSettingsFileProvider(_currentDir);
-            _bootstrapperConfig = GetBootstrapperConfig(args);
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom.Configuration(_bootstrapperConfig)
-                .CreateLogger();
+            SerilogBootstrapper.Bootstrap("serilog", "ezy.id.sts", null, _fp);
             try
             {
+                _bootstrapperConfig = GetBootstrapperConfig(args);
+                
                 // EZYC-2851-modification: we're not using default way of dockerizing.
                 //DockerHelpers.ApplyDockerConfiguration(configuration);
-
                 CreateHostBuilder(args).Build().Run();
             }
             catch (Exception ex)
@@ -51,13 +49,9 @@ namespace Skoruba.IdentityServer4.STS.Identity
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(_currentDir)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile(_fp, $"{"CustomSettings"}/appsettings._Shared.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(_fp, $"{"CustomSettings"}/appsettings.{_environment}.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(_fp, $"{"CustomSettings"}/appsettings.{_environment}.{_subEnvironment}.json", optional: true, reloadOnChange: true)
-                .AddJsonFile("serilog.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(_fp, $"{"CustomSettings"}/serilog._Shared.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.json", optional: true, reloadOnChange: true)
-                .AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.{_subEnvironment}.json", optional: true, reloadOnChange: true);
+                .AddJsonFile(_fp, "appsettings._Shared.json", optional: true, reloadOnChange: true)
+                .AddJsonFile(_fp, $"appsettings.{_environment}.json", optional: true, reloadOnChange: true)
+                .AddJsonFile(_fp, $"appsettings.{_environment}.{_subEnvironment}.json", optional: true, reloadOnChange: true);
 
             var isDevelopment = _environment == Environments.Development;
             if (isDevelopment)
@@ -66,7 +60,6 @@ namespace Skoruba.IdentityServer4.STS.Identity
             }
             
             // TODO: To be able to generate & migrate databases in AWS, migrate AWS SM also here.
-            
             // EZY-modification (EZYC-4328): GCP Secret Manager support
             configurationBuilder.AddGoogleSecretManagerIfEnabled("appsettings");
 
@@ -86,14 +79,10 @@ namespace Skoruba.IdentityServer4.STS.Identity
                  {
                      // EZYC-2851-modification: allow more robust configuration
                      var bootstrapperAdminConfig = _bootstrapperConfig.GetSection(nameof(AdminConfiguration)).Get<AdminConfiguration>();
-                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/appsettings._Shared.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/appsettings.{_environment}.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/appsettings.{_environment}.{_subEnvironment}.json", optional: true,
+                     configApp.AddJsonFile(_fp, "appsettings._Shared.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"appsettings.{_environment}.json", optional: true, reloadOnChange: true);
+                     configApp.AddJsonFile(_fp, $"appsettings.{_environment}.{_subEnvironment}.json", optional: true,
                          reloadOnChange: true);
-                     configApp.AddJsonFile("serilog.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/serilog._Shared.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.json", optional: true, reloadOnChange: true);
-                     configApp.AddJsonFile(_fp, $"{"CustomSettings"}/serilog.{_environment}.{_subEnvironment}.json", optional: true, reloadOnChange: true);
 
                      bool.TryParse(Environment.GetEnvironmentVariable("SKIP_AWS_SECRETS_MANAGER"), out var skipAwsSecretsManager);
                      if (!hostContext.HostingEnvironment.IsDevelopment() && !skipAwsSecretsManager)
@@ -114,7 +103,6 @@ namespace Skoruba.IdentityServer4.STS.Identity
                      
                      // EZY-modification (EZYC-4328): GCP Secret Manager support
                      configApp.AddGoogleSecretManagerIfEnabled("appsettings");
-
                      if (hostContext.HostingEnvironment.IsDevelopment())
                      {
                          configApp.AddUserSecrets<Startup>();
@@ -122,7 +110,6 @@ namespace Skoruba.IdentityServer4.STS.Identity
 
                      // EZY-modification (EZYC-3029): disabling Azure key vault - as per above comments
                      // configurationRoot.AddAzureKeyVaultConfiguration(configApp);
-
                      configApp.AddEnvironmentVariables();
                      configApp.AddCommandLine(args);
                  })
@@ -131,25 +118,7 @@ namespace Skoruba.IdentityServer4.STS.Identity
                     webBuilder.ConfigureKestrel(options => options.AddServerHeader = false);
                     webBuilder.UseStartup<Startup>();
                 })
-                .UseSerilog((hostContext, loggerConfig) =>
-                {
-                    loggerConfig
-                        .ReadFrom.Configuration(hostContext.Configuration)
-                        .Enrich.WithProperty("ApplicationName", hostContext.HostingEnvironment.ApplicationName);
-
-                    // EZYC-2851-modification below
-                    loggerConfig.WriteTo.Logger(lc =>
-                    {
-                        // Serilog doesn't allow to override certain logger levels on per-logger basis. Also, it would be good to have at least some
-                        // decent console logging on non-dev environments, like few initial lifetime (startup) events. That's why, let's include console
-                        // logger for every environment and only in Development mode, let's not restrict it to Microsoft.Hosting.Lifetime
-                        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-                        if (environment != "Development")
-                            lc.Filter.ByIncludingOnly(Matching.FromSource("Microsoft.Hosting.Lifetime"));
-
-                        lc.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}");
-                    });
-                });
+                .UseSerilog();
 
         private static PhysicalFileProvider GetConsumerProjectSettingsFileProvider(string currentDir)
         {
