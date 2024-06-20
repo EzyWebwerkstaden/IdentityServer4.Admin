@@ -6,6 +6,8 @@ LABEL se.ezy.project=identityserver-admin \
 
 WORKDIR /src
 
+COPY --chown=buildagent:buildagent src/lib src/lib
+
 COPY --chown=buildagent:buildagent ["src/Skoruba.IdentityServer4.Admin/Skoruba.IdentityServer4.Admin.csproj", "src/Skoruba.IdentityServer4.Admin/"]
 COPY --chown=buildagent:buildagent ["src/Skoruba.IdentityServer4.Admin.EntityFramework.MySql/Skoruba.IdentityServer4.Admin.EntityFramework.MySql.csproj", "src/Skoruba.IdentityServer4.Admin.EntityFramework.MySql/"]
 COPY --chown=buildagent:buildagent ["src/Skoruba.IdentityServer4.Admin.EntityFramework.Identity/Skoruba.IdentityServer4.Admin.EntityFramework.Identity.csproj", "src/Skoruba.IdentityServer4.Admin.EntityFramework.Identity/"]
