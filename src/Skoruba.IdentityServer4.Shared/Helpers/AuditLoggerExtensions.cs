@@ -1,4 +1,4 @@
-using System;
+using EzyNet.Common.Extensions;
 using EzyNet.Serilog.AuditLogs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,29 +20,6 @@ namespace Skoruba.IdentityServer4.Shared.Helpers
             string controllerName = controller.GetType().Name.Without("Controller").WithoutStartingWith("`");
             var @params = new AuditLogParams($"{controllerName}_{action}", operationStatus, resourceType, resourceId, userId);
             auditLogger.Information(@params, "{action} for: {@resourceId}: {@operationStatus}", action, resourceId, operationStatus);
-        }
-    }
-
-    public static class StringExtensions
-    {
-        public static string Without(this string source, string toReplace)
-        {
-            if (string.IsNullOrEmpty(toReplace))
-                return source;
-
-            return source.Replace(toReplace, string.Empty);
-        }
-        
-        public static string WithoutStartingWith(this string source, string startingWith)
-        {
-            if (string.IsNullOrEmpty(startingWith))
-                return source;
-
-            var indexOfStart = source.IndexOf(startingWith, StringComparison.Ordinal);
-            if (indexOfStart == -1)
-                return source;
-            
-            return source.Substring(0, indexOfStart);
         }
     }
 }

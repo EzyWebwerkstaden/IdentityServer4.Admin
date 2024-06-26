@@ -61,7 +61,7 @@
     <ItemGroup Condition="'$(UseLocalReferencesEzyNet)' == 'false'">
         <PackageReference Include="EzyWebwerkstaden.EzyNet.AspNetCore" Version="1.0.7" />
         <PackageReference Include="EzyWebwerkstaden.EzyNet.Gcp.SecretManager.SerilogSupport" Version="1.2.6" />
-        <PackageReference Include="EzyWebwerkstaden.EzyNet.Serilog" Version="1.1.12" />
+        <PackageReference Include="EzyWebwerkstaden.EzyNet.Serilog" Version="1.1.13" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(UseLocalReferencesEzyNet)' == 'true'">
