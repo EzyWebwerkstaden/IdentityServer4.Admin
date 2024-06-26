@@ -31,7 +31,10 @@ namespace Skoruba.IdentityServer4.Admin
             _environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             _subEnvironment = Environment.GetEnvironmentVariable("SUB_ENVIRONMENT");
             _fp = GetConsumerProjectSettingsFileProvider(_currentDir);
-            SerilogBootstrapper.Bootstrap("serilog", "ezy.id.admin", null, _fp);
+            SerilogBootstrapper
+                .Bootstrap("serilog", "ezy.id.admin", null, _fp)
+                .WithAuditLogger();
+            
             try
             {
                 _bootstrapperConfig = GetBootstrapperConfig(args);
