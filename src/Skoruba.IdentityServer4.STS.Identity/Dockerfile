@@ -63,7 +63,7 @@ LABEL se.ezy.project=identityserver-sts-identity \
   se.ezy.image-purpose=dist
 
 ## DataDog .NET Tracer
-ARG TRACER_VERSION=2.30.0
+ARG TRACER_VERSION=2.53.2
 RUN curl -LO https://github.com/DataDog/dd-trace-dotnet/releases/download/v${TRACER_VERSION}/datadog-dotnet-apm_${TRACER_VERSION}_amd64.deb && \
     dpkg -i ./datadog-dotnet-apm_${TRACER_VERSION}_amd64.deb
 ENV CORECLR_ENABLE_PROFILING=1 \
