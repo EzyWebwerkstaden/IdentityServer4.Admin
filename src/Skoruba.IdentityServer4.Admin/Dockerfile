@@ -49,7 +49,7 @@ RUN --mount=type=secret,id=github_ezy,uid=1000,gid=1000,uid=1000,gid=1000,dst=/e
 
 # ---------------------
 # Final runtime image for GCP
-FROM ghcr.io/ezywebwerkstaden/ezy.ubi8.dotnet-31-runtime:3.1-1.0.13 as gcp
+FROM ghcr.io/ezywebwerkstaden/ezy.ubi8.dotnet-31-runtime:3.1-1.0.15 as gcp
 LABEL se.ezy.project=identityserver-admin \
   se.ezy.image-purpose=dist
 
