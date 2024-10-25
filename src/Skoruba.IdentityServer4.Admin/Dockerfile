@@ -49,7 +49,7 @@ RUN --mount=type=secret,id=github_ezy,uid=1000,gid=1000,uid=1000,gid=1000,dst=/e
 
 # ---------------------
 # Final runtime image for GCP
-FROM ghcr.io/ezywebwerkstaden/ezy.ubi8.dotnet-31-runtime:3.1-1.0.18 as gcp
+FROM ghcr.io/ezywebwerkstaden/ezy.ubi8.dotnet-31-runtime:3.1-1.0.19 as gcp
 LABEL se.ezy.project=identityserver-admin \
   se.ezy.image-purpose=dist
 
@@ -66,7 +66,7 @@ LABEL se.ezy.project=identityserver-admin \
   se.ezy.image-purpose=dist
 
 ## DataDog .NET Tracer
-ARG TRACER_VERSION=3.2.0
+ARG TRACER_VERSION=3.4.0
 RUN curl -LO https://github.com/DataDog/dd-trace-dotnet/releases/download/v${TRACER_VERSION}/datadog-dotnet-apm_${TRACER_VERSION}_amd64.deb && \
     dpkg -i ./datadog-dotnet-apm_${TRACER_VERSION}_amd64.deb
 ENV CORECLR_ENABLE_PROFILING=1 \
