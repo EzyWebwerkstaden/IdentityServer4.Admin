@@ -14,7 +14,7 @@ class ProjectGroup < ProjectGroupBase
       dockerfile_path: 'src/Skoruba.IdentityServer4.STS.Identity/Dockerfile',
       image_name: 'ezy.identityserver.sts.identity',
       attributes: {
-        'secrets_build_param' => "--secret id=github_ezy,src=/opt/.ezyBuild/.env/github_ezy.env \ ",
+        'secrets_build_param' => "--secret id=github_ezy,src=/home/buildagent/.ezyBuild/.env/github_ezy.env \ ",
         'sabre_nexus_staging' =>{
           'docker_image_name' => 'ezy-identityserver-sts-identity'
         }
@@ -27,7 +27,7 @@ class ProjectGroup < ProjectGroupBase
       dockerfile_path: 'src/Skoruba.IdentityServer4.Admin/Dockerfile',
       image_name: 'ezy.identityserver.admin',
       attributes: {
-        'secrets_build_param' => "--secret id=github_ezy,src=/opt/.ezyBuild/.env/github_ezy.env \ ",
+        'secrets_build_param' => "--secret id=github_ezy,src=/home/buildagent/.ezyBuild/.env/github_ezy.env \ ",
         'sabre_nexus_staging' =>{
           'docker_image_name' => 'ezy-identityserver-admin'
         }
