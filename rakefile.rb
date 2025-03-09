@@ -42,7 +42,7 @@ if (!File.exists?(ezyBuildDir))
         --rm \
         --name ezyBuild-ezy.dotnetsdk-restore-ezybuild-#{ezyBuild_version} \
         --user #{$inner_container_runas} \
-        --env-file /opt/.ezyBuild/.env/github_ezy.env \
+        --env-file /home/buildagent/.ezyBuild/.env/github_ezy.env \
         -e EZY_BUILD_VERSION=$ezyBuild_version \
         -v #{Dir.pwd}:/app \
         ghcr.io/ezywebwerkstaden/ezy.dotnetcoresdk:3.1-latest \

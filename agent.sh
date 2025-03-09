@@ -27,5 +27,5 @@ else
 fi
 # ---- End of restore correct version of ezyBuild ----
 
-# ---- Launch main agent startup file ----
+# ---- Launch main startup file ----
 source "${ezyBuildDir}/_dev/agent-main.sh"

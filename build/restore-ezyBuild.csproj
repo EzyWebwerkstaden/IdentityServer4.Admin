@@ -3,7 +3,6 @@
   <PropertyGroup>
       <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
-  <!-- We just need to pull the ezyBuild package for build process to work -->
   <ItemGroup>
     <PackageReference Include="ezyBuild" Version="$(EZY_BUILD_VERSION)" />
   </ItemGroup>
