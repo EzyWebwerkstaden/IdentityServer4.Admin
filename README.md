@@ -1,3 +1,8 @@
+
+# ezyBuild
+ezyBuild - more information [here](/build/readme.md)
+
+
 ![Logo](docs/Images/Skoruba.IdentityServer4.Admin-Logo-ReadMe.png)
 
 # Skoruba.IdentityServer4.Admin
