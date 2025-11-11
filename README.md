@@ -1,6 +1,6 @@
 
 # ezyBuild
-ezyBuild - more information [here](/build/readme.md)
+* ezyBuild - more information [here](/build/readme.md)
 
 
 ![Logo](docs/Images/Skoruba.IdentityServer4.Admin-Logo-ReadMe.png)
