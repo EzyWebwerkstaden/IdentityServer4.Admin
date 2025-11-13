@@ -34,7 +34,7 @@ class ProjectGroup < ProjectGroupBase
         'sabre_nexus_staging' =>{
           'docker_image_name' => 'ezy-identityserver-admin'
         },
-        'trusted' =>{
+        'sabre_nexus_trusted' =>{
           'docker_image_name' => 'ezy-identityserver-admin'
         }
       })
