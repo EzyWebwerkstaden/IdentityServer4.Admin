@@ -17,6 +17,9 @@ class ProjectGroup < ProjectGroupBase
         'secrets_build_param' => "--secret id=github_ezy,src=/home/buildagent/.ezyBuild/.env/github_ezy.env \ ",
         'sabre_nexus_staging' =>{
           'docker_image_name' => 'ezy-identityserver-sts-identity'
+        },
+        'sabre_nexus_trusted' =>{
+          'docker_image_name' => 'ezy-identityserver-sts-identity'
         }
       })
 
@@ -29,6 +32,9 @@ class ProjectGroup < ProjectGroupBase
       attributes: {
         'secrets_build_param' => "--secret id=github_ezy,src=/home/buildagent/.ezyBuild/.env/github_ezy.env \ ",
         'sabre_nexus_staging' =>{
+          'docker_image_name' => 'ezy-identityserver-admin'
+        },
+        'trusted' =>{
           'docker_image_name' => 'ezy-identityserver-admin'
         }
       })
