@@ -40,7 +40,7 @@ if (!File.exists?(ezyBuildDir))
   # Otherwise, even if the env var is present inside the container, the "dotnet restore" doesn't 'see' it.
   sh "#{$container_engine} run \
         --rm \
-        --name ezyBuild-ezy.dotnetsdk-restore-ezybuild-#{ezyBuild_version} \
+        --name ezyBuild-ezy.dotnetsdk-restore-ezybuild-#{ezyBuild_version}-#{Time.now.to_i} \
         --user #{$inner_container_runas} \
         --env-file /home/buildagent/.ezyBuild/.env/github_ezy.env \
         -e EZY_BUILD_VERSION=$ezyBuild_version \
