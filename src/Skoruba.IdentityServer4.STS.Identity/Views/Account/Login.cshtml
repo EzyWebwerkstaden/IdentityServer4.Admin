@@ -4,8 +4,23 @@
 @inject IViewLocalizer Localizer
 @model Skoruba.IdentityServer4.STS.Identity.ViewModels.Account.LoginViewModel
 @inject IRootConfiguration RootConfiguration
+@using IdentityServer4.Services
+@inject IIdentityServerInteractionService InteractionService
 
 <div class="login-page">
+    @{
+    // 1. Get the returnUrl from the current query string
+    var returnUrl = Context.Request.Query["returnUrl"];
+
+    // 2. Parse the returnUrl using IdentityServer's native service
+    var context = await InteractionService.GetAuthorizationContextAsync(returnUrl);
+
+    // 3. Extract the login_hint value if it exists
+    var loginHint = context?.LoginHint;
+
+    // 4. Check if we should enforce a read-only lock
+    bool isReadOnly = !string.IsNullOrEmpty(loginHint);
+    }
     <div class="page-header">
         <h1>@Localizer["Title"]</h1>
     </div>
@@ -32,7 +47,7 @@
                                                     <i class="fa fa-user"></i>
                                                 </span>
                                             </div>
-                                            <input class="form-control" placeholder="@Localizer[LoginPolicyResolutionLocalizer.GetUserNameLocalizationKey(Model.LoginResolutionPolicy)]" asp-for="Username" aria-label="Username" aria-describedby="input-username" autofocus>
+                                            <input class="form-control" placeholder="@Localizer[LoginPolicyResolutionLocalizer.GetUserNameLocalizationKey(Model.LoginResolutionPolicy)]" asp-for="Username" aria-label="Username" aria-describedby="input-username" autofocus="!@isReadOnly" readonly="@isReadOnly" />
                                         </div>
                                     </div>
                                 </div>
@@ -45,7 +60,7 @@
                                                     <span class="oi oi-lock-locked" title="Lock" aria-hidden="true"></span>
                                                 </span>
                                             </div>
-                                            <input type="password" class="form-control" placeholder="@Localizer["Password"]" aria-label="Password" aria-describedby="input-password" asp-for="Password" autocomplete="off">
+                                            <input type="password" class="form-control" placeholder="@Localizer["Password"]" aria-label="Password" aria-describedby="input-password" asp-for="Password" autocomplete="off" autofocus="@isReadOnly">
                                         </div>
                                     </div>
                                 </div>
