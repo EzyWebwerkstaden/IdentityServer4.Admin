@@ -22,7 +22,7 @@
     bool isReadOnly = !string.IsNullOrEmpty(loginHint);
     }
     <div class="page-header">
-        <h1>@Localizer["Title"]</h1>
+        <h1>@(isReadOnly ? "ReAuthentication" : Localizer["Title"].Value)</h1>
     </div>
 
     @await Html.PartialAsync("_ValidationSummary")
@@ -33,7 +33,7 @@
         {
             <div class="col-sm-6">
                 <div class="card mt-3">
-                    <h5 class="card-header">@Localizer["LocalLogin"]</h5>
+                    <h5 class="card-header">@(isReadOnly ? "Enter your password" : @Localizer["LocalLogin"].Value)</h5>
                     <div class="card-body">
                         <form asp-route="Login">
                             <input type="hidden" asp-for="ReturnUrl" />
