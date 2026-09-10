@@ -740,6 +740,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                     EnableLocalLogin = false,
                     ReturnUrl = returnUrl,
                     Username = context?.LoginHint,
+                    IsReadOnly = !string.IsNullOrEmpty(context?.LoginHint),
                     LoginResolutionPolicy = _loginConfiguration.ResolutionPolicy,
                     ExternalProviders = new ExternalProvider[] { new ExternalProvider { AuthenticationScheme = context.IdP } }
                 };
@@ -778,6 +779,7 @@ namespace Skoruba.IdentityServer4.STS.Identity.Controllers
                 EnableLocalLogin = allowLocal && AccountOptions.AllowLocalLogin,
                 ReturnUrl = returnUrl,
                 Username = context?.LoginHint,
+                IsReadOnly = !string.IsNullOrEmpty(context?.LoginHint),
                 LoginResolutionPolicy = _loginConfiguration.ResolutionPolicy,
                 ExternalProviders = providers.ToArray()
             };
