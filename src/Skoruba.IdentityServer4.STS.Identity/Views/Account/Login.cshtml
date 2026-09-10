@@ -32,7 +32,8 @@
                                                     <i class="fa fa-user"></i>
                                                 </span>
                                             </div>
-                                            <input class="form-control" placeholder="@Localizer[LoginPolicyResolutionLocalizer.GetUserNameLocalizationKey(Model.LoginResolutionPolicy)]" asp-for="Username" aria-label="Username" aria-describedby="input-username" autofocus="!@Model.IsReadOnly" readonly="@Model.IsReadOnly" />
+                                            <input class="form-control" placeholder="@Localizer[LoginPolicyResolutionLocalizer.GetUserNameLocalizationKey(Model.LoginResolutionPolicy)]" asp-for="Username" aria-label="Username" aria-describedby="input-username" autofocus="@(!Model.IsReadOnly ? "autofocus" : null)"
+                                                   readonly="@(Model.IsReadOnly ? "readonly" : null)" />
                                         </div>
                                     </div>
                                 </div>
@@ -45,7 +46,7 @@
                                                     <span class="oi oi-lock-locked" title="Lock" aria-hidden="true"></span>
                                                 </span>
                                             </div>
-                                            <input type="password" class="form-control" placeholder="@Localizer["Password"]" aria-label="Password" aria-describedby="input-password" asp-for="Password" autocomplete="off" autofocus="@Model.IsReadOnly">
+                                            <input type="password" class="form-control" placeholder="@Localizer["Password"]" aria-label="Password" aria-describedby="input-password" asp-for="Password" autocomplete="off" autofocus="@(Model.IsReadOnly ? "autofocus" : null)" />
                                         </div>
                                     </div>
                                 </div>
